@@ -225,8 +225,15 @@ if __name__ == '__main__':
     parser.add_argument('--prefer-unicode-math','-P',action='store_true',
                         default=prefer_unicode_math,
                         help='converto to unicode-math commands whenever possible')
-    parser.add_argument('text', nargs='+', help='the unicode text')
+    parser.add_argument('--input','-i',
+                        help='read input file')
+    parser.add_argument('text', nargs='*',
+                        help='the unicode text')
     args = parser.parse_args()
+    #
+    if not args.text and not args.input:
+        parser.print_help()
+        sys.exit(1)
     #
     verbose = args.verbose
     prefer_unicode_math = args.prefer_unicode_math
