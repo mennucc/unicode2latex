@@ -220,12 +220,12 @@ if __name__ == '__main__':
     parser.add_argument('--verbose','-v',action='count',default=0)
     parser.add_argument('--prefer-unicode-math','-P',action='store_true',
                         help='converto to unicode-math commands whenever possible')
-    parser.add_argument('input', nargs='+', help='the unicode input')
+    parser.add_argument('text', nargs='+', help='the unicode text')
     args = parser.parse_args()
     #
     verbose = args.verbose
     prefer_unicode_math = args.prefer_unicode_math
-    for  t in args.input:
+    for  t in args.text:
         if not isinstance(t,str):
             t = str(t, "utf-8")
         print(uni2tex(t))
