@@ -1,0 +1,38 @@
+\documentclass[a4paper,english]{article}
+\usepackage{amsmath,amssymb} % ,fdsymbol,stmaryrd}
+
+\usepackage{polyglossia}
+
+\usepackage{fontspec}
+\usepackage%[math-style=ISO,bold-style=ISO]
+{unicode-math}
+% a mistake in the map
+%% http://tex.stackexchange.com/questions/55204/remapping-latex-symbol-to-another-unicode-value/55205
+\AtBeginDocument{\let\setminus\smallsetminus}
+\setmathfont{Latin Modern Math}
+
+\begin{document}
+
+multiple accents ṩ \(→\)  \.{\d{s}}
+
+multiple fonts
+\[ ℼ 𝐌 𝐾 𝒢 𝓦 𝕍 𝕛 𝕳 𝖠 𝘤 𝙲 𝚰 𝛥 𝝟 𝝽 𝞿 𝟙 𝖂 ⅅ ⅈ ⅉ\]
+
+
+
+different versions of \emph{theta}
+\[\theta Θ  θ  ϑ  ϴ \]
+
+strange math, with fonts
+\[𝑥 ∈ ℝ⁶→  τ_∗^ i (C ^ ∞ (U ) ∩ V) × 𝐶^ ∞  ∫ |𝑐' (𝜃)| 𝕕𝜃 \quad 𝑝◦ℎ = 𝜑' ⊂ 𝒲\]
+
+a	tab character
+
+
+\end{document}
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-engine: xetex
+%%% End:
