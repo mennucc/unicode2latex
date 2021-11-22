@@ -192,14 +192,16 @@ def decompose_to_tex(text, output):
             #output.append( mod % n )
             output.append(char)
             return
-        base = int(base, 16)
-        acc = int(acc, 16)
-        if acc in accents:
-            decompose_to_tex(chr(base), output)
-            n = output.pop()
-            output.append( "\\%s{%s}" %(accents[acc], n) )
-            return
-        sys.stderr.write('%r:%d:%d unsupported decomposition %r\n' % (input_file, line_count, char_count,dec))
+        try:
+            base = int(base, 16)
+            acc = int(acc, 16)
+            if acc in accents:
+                decompose_to_tex(chr(base), output)
+                n = output.pop()
+                output.append( "\\%s{%s}" %(accents[acc], n) )
+                return
+        except ValueError:
+            sys.stderr.write('%r:%d:%d unsupported decomposition %r\n' % (input_file, line_count, char_count,dec))
     #
     if name.startswith('GREEK'):
         char = name.split()[-1].lower()
