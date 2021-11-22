@@ -219,6 +219,7 @@ if __name__ == '__main__':
                                      epilog=__doc__)
     parser.add_argument('--verbose','-v',action='count',default=verbose)
     parser.add_argument('--prefer-unicode-math','-P',action='store_true',
+                        default=prefer_unicode_math,
                         help='converto to unicode-math commands whenever possible')
     parser.add_argument('text', nargs='+', help='the unicode text')
     args = parser.parse_args()
