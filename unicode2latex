@@ -225,6 +225,8 @@ if __name__ == '__main__':
     parser.add_argument('--prefer-unicode-math','-P',action='store_true',
                         default=prefer_unicode_math,
                         help='converto to unicode-math commands whenever possible')
+    parser.add_argument('--output','-o',
+                        help='output file')
     parser.add_argument('--input','-i',
                         help='read input file')
     parser.add_argument('text', nargs='*',
@@ -237,7 +239,22 @@ if __name__ == '__main__':
     #
     verbose = args.verbose
     prefer_unicode_math = args.prefer_unicode_math
+    #
+    if args.input:
+        out=sys.stdout
+        if args.output:
+            out = open(args.output, 'w')
+        if args.text:
+            logger.warning('Cmdline %r ignored', args.text)
+        input_file = args.input
+        for L in open(args.input):
+            out.write(uni2tex(L))
+            char_count = 0
+            line_count += 1
+        sys.exit(0)
+    #
     for  t in args.text:
         if not isinstance(t,str):
             t = str(t, "utf-8")
         print(uni2tex(t))
+    sys.exit(0)
