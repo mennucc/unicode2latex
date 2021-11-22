@@ -114,7 +114,7 @@ def decompose_to_tex(text, output):
     code = ord(char)
     cat = unicodedata.category(char)
     dec = unicodedata.decomposition(char)
-    name = unicodedata.name(char)
+    name = unicodedata.name(char, '')
     #
     if prefer_unicode_math and code in math2latex and code > 0x7f:
         latex = math2latex[code]
