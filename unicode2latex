@@ -215,6 +215,8 @@ def decompose_to_tex(text, output):
         if verbose: sys.stderr.write('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
         output.append(latex+' ')
         return
+    if code > 127:
+        sys.stderr.write('%r:%d:%d could not convert %r %x to ascii\n' % (input_file, line_count, char_count,char,code))
     output.append(char)
         
 def uni2tex(text):
