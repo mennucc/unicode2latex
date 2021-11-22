@@ -26,7 +26,7 @@ It will convert math symbols, e.g.  ∩ → \cap .
 import os, sys, copy, io, argparse, unicodedata, collections, subprocess, logging
 logger = logging.getLogger(__name__)
 
-verbose = False
+verbose = 0
 
 prefer_unicode_math = False
 
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='convert Unicode to LaTeX',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      epilog=__doc__)
-    parser.add_argument('--verbose','-v',action='count',default=0)
+    parser.add_argument('--verbose','-v',action='count',default=verbose)
     parser.add_argument('--prefer-unicode-math','-P',action='store_true',
                         help='converto to unicode-math commands whenever possible')
     parser.add_argument('text', nargs='+', help='the unicode text')
