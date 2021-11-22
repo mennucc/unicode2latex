@@ -140,7 +140,8 @@ def decompose_to_tex(text, output):
             if dec[-1] == '/': dec[-1] = ''
             output.append( '{\sfrac{%s}{%s}}' % (dec[0],dec[-1]))
             return
-        base, acc = dec.split()
+        decsplit = dec.split()
+        base, acc = decsplit[:2]
         if base == '<font>':
             mod = '%s'
             N = copy.copy(name)
@@ -163,12 +164,19 @@ def decompose_to_tex(text, output):
             output.append( '{\scriptsize{%s}}' % n )
             return
         if base == '<compat>':
+            # greek characters, `var` version
             acc = int(acc, 16)
-            decompose_to_tex(chr(acc), output)
             if 0x370 <= acc <= 0x3ff:
+                decompose_to_tex(chr(acc), output)
                 n = output.pop()
                 output.append( n[0] + 'var' + n[1:] )
-            return
+                return
+            elif 'LIGATURE' in name:
+                for l in decsplit[1:]:
+                    l = int(l, 16)
+                    decompose_to_tex(chr(l), output)
+                return
+            sys.stderr.write('%r:%d:%d unsupported <compat> %r\n' % (input_file, line_count, char_count,dec))
         elif base in modifiers:
             mod = modifiers[base]
             acc = int(acc, 16)
