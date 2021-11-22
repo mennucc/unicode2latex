@@ -98,7 +98,7 @@ modifiers = {
 
 
 line_count = 1
-char_count = 1
+char_count = 0
 input_file = 'cmdline'
 
 
