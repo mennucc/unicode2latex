@@ -23,13 +23,25 @@ It will express fonts, e.g.  ⅅ → \symbbit{D} .
 It will convert math symbols, e.g.  ∩ → \cap .
 """
 
-import os, sys, copy, io, argparse, unicodedata, collections
+import os, sys, copy, io, argparse, unicodedata, collections, subprocess, logging
+logger = logging.getLogger(__name__)
 
 verbose = False
 
 prefer_unicode_math = False
 
 unicode_math_file = '/usr/share/texlive/texmf-dist/tex/latex/unicode-math/unicode-math-table.tex'
+
+try:
+    p = subprocess.Popen(['kpsewhich', 'unicode-math-table.tex'], stdout=subprocess.PIPE)
+    a = p.stdout.read().strip()
+    p.wait()
+    if os.path.isfile(a):
+        unicode_math_file = a
+    else:
+        logger.warning('Cannot locate unicode-math-table.tex')
+except:
+    logger.exception('While running kpsewhich unicode-math-table.tex')
 
 math2latex = {
     0xD7 : '\\times',
