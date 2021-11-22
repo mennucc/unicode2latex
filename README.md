@@ -10,6 +10,12 @@ It will expand ligatures ﬃ → ffi
 It will expand fractions ⅖ → \sfrac{2}{5}
 (this needs package `xfrac`)
 
+It will convert small characters such as ﹦﹖
+
+It will convert subscripts rₐ tᵪ → r_{a} t_{\chi}
+
+And superscripts  0⁺ → 0^{+}
+
 It will convert math symbols, e.g.  ∩ → \cap
 
 It will convert greek letters ϑ → \vartheta .
