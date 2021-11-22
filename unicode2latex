@@ -97,16 +97,20 @@ modifiers = {
 }
 
 
-
+line_count = 1
+char_count = 1
+input_file = 'cmdline'
 
 
 def decompose_to_tex(text, output):
+    global char_count
     if isinstance(text,str):
         assert(len(text) == 1)
         char = text
     else:
     #if isinstance(text,  collections.abc.Iterable):
         char = next(text)
+        char_count += 1
     code = ord(char)
     cat = unicodedata.category(char)
     dec = unicodedata.decomposition(char)
@@ -114,17 +118,17 @@ def decompose_to_tex(text, output):
     #
     if prefer_unicode_math and code in math2latex and code > 0x7f:
         latex = math2latex[code]
-        if verbose: sys.stderr.write('(math %r %x %s)\n' % (char,code,latex))
+        if verbose: sys.stderr.write('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
         output.append(latex+' ')
         return
     #
-    if verbose: sys.stderr.write('(decomposing %r %x %r %r %r)\n' % (char,code,cat,dec,name))
+    if verbose: sys.stderr.write('%r:%d:%d decomposing %r %x %r %r %r\n' % (input_file, line_count, char_count,char,code,cat,dec,name))
     #
     if cat in ("Mn", "Mc") and code in accents:
         try:
             n = output.pop()
         except IndexError:
-            sys.stderr.write('(accents with no preceding character)')
+            sys.stderr.write('%r:%d:%d accents with no preceding character\n' % (input_file, line))
             n=' '
         output.append( "\\%s{%s}" %(accents[code], n) )
         return
@@ -173,7 +177,7 @@ def decompose_to_tex(text, output):
             output.append( mod % n )
             return
         elif base.startswith('<'):
-            sys.stderr.write('(unsupported modifier %r)\n' % base)
+            sys.stderr.write('%r:%d:%d unsupported modifier %r\n' % (input_file, line_count, char_count,base))
             #acc = int(acc, 16)
             #decompose_to_tex(chr(acc), output)
             #n = output.pop()
@@ -187,7 +191,7 @@ def decompose_to_tex(text, output):
             n = output.pop()
             output.append( "\\%s{%s}" %(accents[acc], n) )
             return
-        sys.stderr.write('(unsupported decomposition %r)\n' % dec)
+        sys.stderr.write('%r:%d:%d unsupported decomposition %r\n' % (input_file, line_count, char_count,dec))
     #
     if name.startswith('GREEK'):
         char = name.split()[-1].lower()
@@ -198,7 +202,7 @@ def decompose_to_tex(text, output):
     #
     if code in math2latex and code > 0x7f:
         latex = math2latex[code]
-        if verbose: sys.stderr.write('(math %r %x %s)\n' % (char,code,latex))
+        if verbose: sys.stderr.write('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
         output.append(latex+' ')
         return
     output.append(char)
