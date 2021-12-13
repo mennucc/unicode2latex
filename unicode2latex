@@ -58,7 +58,10 @@ if os.path.isfile(unicode_math_file):
             s = s.split('{')
             code=int(s[1].lstrip('"').rstrip('}').rstrip(' '),16)
             latex=s[2].rstrip('}').rstrip(' ')
-            math2latex[code] = latex
+            if code not in math2latex: 
+                math2latex[code] = latex
+            elif verbose:
+                sys.stderr.write('(Prefer %r for %x to %r )\n' % (math2latex[code], code,latex))
 
 
 
