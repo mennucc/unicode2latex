@@ -122,7 +122,8 @@ def decompose_to_tex(text, output):
         output.append(latex+' ')
         return
     #
-    if verbose: sys.stderr.write('%r:%d:%d decomposing %r %x %r %r %r\n' % (input_file, line_count, char_count,char,code,cat,dec,name))
+    if (verbose and dec) or (verbose > 1 ):
+        sys.stderr.write('%r:%d:%d decomposing %r %x %r %r %r\n' % (input_file, line_count, char_count,char,code,cat,dec,name))
     #
     if cat in ("Mn", "Mc") and code in accents:
         try:
