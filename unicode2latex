@@ -241,28 +241,37 @@ if __name__ == '__main__':
                         help='output file')
     parser.add_argument('--input','-i',
                         help='read input file')
+    parser.add_argument('--stdin',action='store_true',
+                        help='read stdin (instead of input file)')
     parser.add_argument('text', nargs='*',
                         help='the unicode text')
     args = parser.parse_args()
     #
-    if not args.text and not args.input:
+    if 1 != bool(args.text) + bool(args.input) + bool(args.stdin):
         parser.print_help()
         sys.exit(1)
     #
     verbose = args.verbose
     prefer_unicode_math = args.prefer_unicode_math
     #
-    if args.input:
+    if args.input or args.stdin:
         out=sys.stdout
         if args.output:
             out = open(args.output, 'w')
         if args.text:
             logger.warning('Cmdline %r ignored', args.text)
-        input_file = args.input
-        for L in open(args.input):
-            out.write(uni2tex(L))
-            char_count = 0
-            line_count += 1
+        if args.stdin:
+            input_file = 'stdin'
+            for L in sys.stdin:
+                out.write(uni2tex(L))
+                char_count = 0
+                line_count += 1
+        else:
+            input_file = args.input
+            for L in open(args.input):
+                out.write(uni2tex(L))
+                char_count = 0
+                line_count += 1
         sys.exit(0)
     #
     for  t in args.text:
