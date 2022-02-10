@@ -47,6 +47,7 @@ math2latex = {
     0xD7 : '\\times',
     0x221E : '\\infty',
     0xab : '\\guillemotleft' , 0xbb : '\\guillemotright',
+    0x25E6 : '\\circ',
 }
 
 
