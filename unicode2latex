@@ -43,7 +43,7 @@ try:
 except:
     logger.exception('While running kpsewhich unicode-math-table.tex')
 
-math2latex = {
+unicodemath2latex = {
     0xD7 : '\\times',
     0x221E : '\\infty',
     0xab : '\\guillemotleft' , 0xbb : '\\guillemotright',
@@ -60,11 +60,14 @@ if os.path.isfile(unicode_math_file):
             s = s.split('{')
             code=int(s[1].lstrip('"').rstrip('}').rstrip(' '),16)
             latex=s[2].rstrip('}').rstrip(' ')
-            if code not in math2latex: 
-                math2latex[code] = latex
+            if code not in unicodemath2latex: 
+                unicodemath2latex[code] = latex
             elif verbose:
-                sys.stderr.write('(Prefer %r for %x to %r )\n' % (math2latex[code], code,latex))
+                sys.stderr.write('(Prefer %r for %x to %r )\n' % (unicodemath2latex[code], code,latex))
 
+latex2unicodemath = {
+    k:v for (v,k) in unicodemath2latex.items()
+}
 
 
 accents = {
@@ -72,6 +75,11 @@ accents = {
     0x030B: 'H', 0x0303: '~', 0x0327: 'c', 0x0328: 'k',
     0x0304: '=', 0x0331: 'b', 0x0307: '.', 0x0323: 'd',
     0x030A: 'r', 0x0306: 'u', 0x030C: 'v',
+}
+
+
+latexaccents2unicode = {
+    k:v for (v,k) in accents.items()
 }
 
 ##https://ctan.mirror.garr.it/mirrors/ctan/macros/unicodetex/latex/unicode-math/unicode-math.pdf
@@ -121,8 +129,8 @@ def decompose_to_tex(text, output):
     dec = unicodedata.decomposition(char)
     name = unicodedata.name(char, '')
     #
-    if prefer_unicode_math and code in math2latex and code > 0x7f:
-        latex = math2latex[code]
+    if prefer_unicode_math and code in unicodemath2latex and code > 0x7f:
+        latex = unicodemath2latex[code]
         if verbose: sys.stderr.write('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
         output.append(latex+' ')
         return
@@ -136,7 +144,8 @@ def decompose_to_tex(text, output):
         except IndexError:
             sys.stderr.write('%r:%d:%d accents with no preceding character\n' % (input_file, line))
             n=' '
-        output.append( "\\%s{%s}" %(accents[code], n) )
+        # FIXME should know if in math mode or not
+        output.append( "\\%s{%s}" %(accents_unicode2latex[code], n) )
         return
     
     if dec:
@@ -216,8 +225,8 @@ def decompose_to_tex(text, output):
         output.append('\\' + char)
         return
     #
-    if code in math2latex and code > 0x7f:
-        latex = math2latex[code]
+    if code in unicodemath2latex and code > 0x7f:
+        latex = unicodemath2latex[code]
         if verbose: sys.stderr.write('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
         output.append(latex+' ')
         return
