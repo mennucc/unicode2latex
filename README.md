@@ -6,7 +6,7 @@ convert unicode to LaTeX
 This script will convert unicode to a suitable LaTeX representation.
 
 - It will convert accents, e.g. è  → \`e
-  or ũ → \widetilde{u}
+  or ũ → \~{u}
   or Ç  → \c{C} .
   It will work fine   both the single codepoint Ç that is U+00C7 ;
   and the combining version Ç  that is  U+0043  followed by U+0327
@@ -42,6 +42,12 @@ will need `xelatex` or `lualatex` with packages
 
 Similarly if some particular unicode are used, such
 as ⇎ that will be converted to `\nLeftrightarrow`
+
+Issues
+------
+
+Currently accents are always converted using the non-math representation,
+for example Ù becomes `\~u` but in math-mode it should be  `\tilde u`
 
 latex2unicode
 =============
