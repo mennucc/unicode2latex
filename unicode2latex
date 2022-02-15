@@ -82,6 +82,120 @@ latexaccents2unicode = {
     k:v for (v,k) in accents.items()
 }
 
+############ mathematical greek mapping
+
+#This mapping 
+# was taken from https://www.math.toronto.edu/mathit/symbols-letter.pdf
+# was then compiled with XeLaTeX in math mode
+
+greek_xelatex_input = list(map(str.split,\
+r"""Γ \Gamma \\ 
+Θ \Theta \\ 
+Λ \Lambda \\ 
+Ξ \Xi \\ 
+Π \Pi \\ 
+Σ \Sigma \\ 
+Υ \Upsilon \\ 
+Φ \Phi \\
+Ψ \Psi \\ 
+α \alpha \\ 
+β \beta \\ 
+γ \gamma \\ 
+δ \delta \\ 
+ε \varepsilon \\ 
+ζ \zeta \\ 
+η \eta \\ 
+θ \theta \\ 
+θ \vartheta \\ 
+ι \iota \\ 
+κ \kappa \\ 
+λ \lambda \\ 
+μ \mu \\ 
+ν \nu \\ 
+ξ \xi \\ 
+π \pi \\ 
+ρ \rho \\ 
+ς \varsigma \\ 
+σ \sigma \\ 
+τ \tau \\ 
+υ \upsilon \\ 
+φ \phi \\ 
+φ \varphi \\ 
+χ \chi \\ 
+ψ \psi \\ 
+ω \omega \\ 
+Ω \Omega \\ 
+∆ \Delta \\ 
+𝜖 \epsilon \\ 
+𝜚 \varrho \\ 
+𝜛 \varpi \\
+""".splitlines()))
+
+# and got this PDF
+
+greek_xelatex_ouput = """ΓΓ
+ΘΘ
+ΛΛ
+ΞΞ
+ΠΠ
+ΣΣ
+ΥΥ
+ΦΦ
+ΨΨ
+𝛼𝛼
+𝛽𝛽
+𝛾𝛾
+𝛿𝛿
+𝜀𝜀
+𝜁𝜁
+𝜂𝜂
+𝜃𝜃
+𝜃𝜗
+𝜄𝜄
+𝜅𝜅
+𝜆𝜆
+𝜇𝜇
+𝜈𝜈
+𝜉𝜉
+𝜋𝜋
+𝜌𝜌
+𝜍𝜍
+𝜎𝜎
+𝜏𝜏
+𝜐𝜐
+𝜑𝜙
+𝜑𝜑
+𝜒𝜒
+𝜓𝜓
+𝜔𝜔
+Ω
+∆Δ
+𝜖𝜖
+𝜚𝜚
+𝜛𝜛
+""".splitlines()
+
+assert len(greek_xelatex_input) == len(greek_xelatex_ouput), \
+        (len(greek_xelatex_input) , len(greek_xelatex_ouput))
+
+## the mapping was not exactly as in the previous PDF
+#for j in greek_xelatex_ouput:
+#    if len(j) == 2 and j[0] != j[1]:
+#        print(' symbols %r ord 0x%x 0x%x ' %    (j, ord(j[0]), ord(j[1])) )
+## symbols '𝜃𝜗' ord 0x1d703 0x1d717 
+## symbols '𝜑𝜙' ord 0x1d711 0x1d719 
+## symbols '∆Δ' ord 0x2206 0x394 
+
+
+latex2mathgreek = { greek_xelatex_input[n][1] : ord(greek_xelatex_ouput[n][-1]) for n in range(len(greek_xelatex_ouput)) }
+
+mathgreek2latex= {
+    k:v for (v,k) in latex2mathgreek.items()
+}
+
+#############################################
+
+
 ##https://ctan.mirror.garr.it/mirrors/ctan/macros/unicodetex/latex/unicode-math/unicode-math.pdf
 ##table 7
 fonts = (
