@@ -93,6 +93,19 @@ if os.path.isfile(unicode_math_file):
                 unicodemath2latex[code] = latex
             elif verbose:
                 sys.stderr.write('(Prefer %r for %x to %r )\n' % (unicodemath2latex[code], code,latex))
+            if '/' in info:
+                info = info.split(' ')
+                for i in info:
+                    if i and i[0] == '/':
+                        oc = '\\' + i[1:]
+                        if oc not in latex2unicodemath:
+                            latex2unicodemath[oc] = code
+                            if verbose > 2:
+                                sys.stderr.write('(Macro %r points to to 0x%x as an alias for %r )\n' %\
+                                                 (oc, code, latex))
+                        elif verbose and code != latex2unicodemath[oc]:
+                            sys.stderr.write('(Macro %r already points to 0x%x instead of 0x%x (%r) )\n' %\
+                                             (oc, latex2unicodemath[oc], code, latex))
 
 
 
