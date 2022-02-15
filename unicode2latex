@@ -61,6 +61,10 @@ unicodemath2latex = {
     0x25E6 : '\\circ',
 }
 
+latex2unicodemath = {
+    k:v for (v,k) in unicodemath2latex.items()
+}
+
 
 ## see also
 ## https://ctan.math.washington.edu/tex-archive/fonts/kpfonts-otf/doc/unimath-kpfonts.pdf
@@ -80,14 +84,16 @@ if os.path.isfile(unicode_math_file):
                 accents[code] = latex[1:]
                 continue
             #
+            if latex not in latex2unicodemath:
+                latex2unicodemath[latex] = code
+            elif  latex2unicodemath[latex] != code and verbose:
+                sys.stderr.write('(Duplicate entry %r %r , keeps 0x%x rejects 0x%x  )\n' % (latex, typ_, latex2unicodemath[latex] , code))
+            #
             if code not in unicodemath2latex: 
                 unicodemath2latex[code] = latex
             elif verbose:
                 sys.stderr.write('(Prefer %r for %x to %r )\n' % (unicodemath2latex[code], code,latex))
 
-latex2unicodemath = {
-    k:v for (v,k) in unicodemath2latex.items()
-}
 
 
 }
