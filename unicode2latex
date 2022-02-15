@@ -70,6 +70,10 @@ math_latex2unicode = {
 }
 
 
+mathaccents_unicode2latex = {}
+
+mathaccents_latex2unicode = {}
+
 ## see also
 ## https://ctan.math.washington.edu/tex-archive/fonts/kpfonts-otf/doc/unimath-kpfonts.pdf
 
@@ -82,34 +86,36 @@ if os.path.isfile(unicode_math_file):
             typ_ = s[3].rstrip('}')
             info = s[4].rstrip('}')
             #
+            U = math_unicode2latex
+            L = math_latex2unicode
             if 'accent' in typ_:
                 if not (  ( 0x300 <= code and code <= 0x36F ) or  (0x20D0 <= code and code <= 0x20FF) ):
                     sys.stderr.write('(Warning accent %r code 0x%x out of standard unicode table)\n' % (latex, code))
-                accents_unicode2latex[code] = latex[1:]
-                continue
+                U = mathaccents_unicode2latex
+                L = mathaccents_latex2unicode
             #
-            if latex not in math_latex2unicode:
-                math_latex2unicode[latex] = code
-            elif  math_latex2unicode[latex] != code and verbose:
-                sys.stderr.write('(Duplicate entry %r %r , keeps 0x%x rejects 0x%x  )\n' % (latex, typ_, math_latex2unicode[latex] , code))
+            if latex not in L:
+                L[latex] = code
+            elif  L[latex] != code and verbose:
+                sys.stderr.write('(Duplicate entry %r %r , keeps 0x%x rejects 0x%x  )\n' % (latex, typ_, L[latex] , code))
             #
-            if code not in math_unicode2latex: 
-                math_unicode2latex[code] = latex
-            elif verbose:
-                sys.stderr.write('(Prefer %r for %x to %r )\n' % (math_unicode2latex[code], code,latex))
+            if code not in U:
+                U[code] = latex
+            elif verbose and U[code] != latex:
+                sys.stderr.write('(Prefer 0x%x → %s  instead of %s (%s))\n' % (code, U[code], latex, typ_))
             if '/' in info:
                 info = info.split(' ')
                 for i in info:
                     if i and i[0] == '/':
                         oc = '\\' + i[1:]
-                        if oc not in math_latex2unicode:
-                            math_latex2unicode[oc] = code
+                        if oc not in L:
+                            L[oc] = code
                             if verbose > 2:
-                                sys.stderr.write('(Macro %r points to to 0x%x as an alias for %r )\n' %\
+                                sys.stderr.write('(Macro %s points to to 0x%x as an alias for %s )\n' %\
                                                  (oc, code, latex))
-                        elif verbose and code != math_latex2unicode[oc]:
-                            sys.stderr.write('(Macro %r already points to 0x%x instead of 0x%x (%r) )\n' %\
-                                             (oc, math_latex2unicode[oc], code, latex))
+                        elif verbose and code != L[oc]:
+                            sys.stderr.write('(Macro %r already points to 0x%x, cannot alias to 0x%x (%s) )\n' %\
+                                             (oc, L[oc], code, latex))
 
 
 
