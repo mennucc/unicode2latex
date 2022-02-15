@@ -45,24 +45,28 @@ except:
 
 ## https://en.wikipedia.org/wiki/Combining_Diacritical_Marks
 ## https://en.wikipedia.org/wiki/Combining_Diacritical_Marks_for_Symbols
-accents = {
+accents_unicode2latex = {
     0x0300: '`', 0x0301: "'", 0x0302: '^', 0x0308: '"',
     0x030B: 'H', 0x0303: '~', 0x0327: 'c', 0x0328: 'k',
     0x0304: '=', 0x0331: 'b', 0x0307: '.', 0x0323: 'd',
     0x030A: 'r', 0x0306: 'u', 0x030C: 'v',
 }
 
+accents_latex2unicode = {
+    k:v for (v,k) in accents_unicode2latex.items()
+}
+
 ## seed with some assignments that will supersed 'unicode-math-table.tex'
 
-unicodemath2latex = {
+math_unicode2latex = {
     0xD7 : '\\times',
     0x221E : '\\infty',
     0xab : '\\guillemotleft' , 0xbb : '\\guillemotright',
     0x25E6 : '\\circ',
 }
 
-latex2unicodemath = {
-    k:v for (v,k) in unicodemath2latex.items()
+math_latex2unicode = {
+    k:v for (v,k) in math_unicode2latex.items()
 }
 
 
@@ -81,40 +85,33 @@ if os.path.isfile(unicode_math_file):
             if 'accent' in typ_:
                 if not (  ( 0x300 <= code and code <= 0x36F ) or  (0x20D0 <= code and code <= 0x20FF) ):
                     sys.stderr.write('(Warning accent %r code 0x%x out of standard unicode table)\n' % (latex, code))
-                accents[code] = latex[1:]
+                accents_unicode2latex[code] = latex[1:]
                 continue
             #
-            if latex not in latex2unicodemath:
-                latex2unicodemath[latex] = code
-            elif  latex2unicodemath[latex] != code and verbose:
-                sys.stderr.write('(Duplicate entry %r %r , keeps 0x%x rejects 0x%x  )\n' % (latex, typ_, latex2unicodemath[latex] , code))
+            if latex not in math_latex2unicode:
+                math_latex2unicode[latex] = code
+            elif  math_latex2unicode[latex] != code and verbose:
+                sys.stderr.write('(Duplicate entry %r %r , keeps 0x%x rejects 0x%x  )\n' % (latex, typ_, math_latex2unicode[latex] , code))
             #
-            if code not in unicodemath2latex: 
-                unicodemath2latex[code] = latex
+            if code not in math_unicode2latex: 
+                math_unicode2latex[code] = latex
             elif verbose:
-                sys.stderr.write('(Prefer %r for %x to %r )\n' % (unicodemath2latex[code], code,latex))
+                sys.stderr.write('(Prefer %r for %x to %r )\n' % (math_unicode2latex[code], code,latex))
             if '/' in info:
                 info = info.split(' ')
                 for i in info:
                     if i and i[0] == '/':
                         oc = '\\' + i[1:]
-                        if oc not in latex2unicodemath:
-                            latex2unicodemath[oc] = code
+                        if oc not in math_latex2unicode:
+                            math_latex2unicode[oc] = code
                             if verbose > 2:
                                 sys.stderr.write('(Macro %r points to to 0x%x as an alias for %r )\n' %\
                                                  (oc, code, latex))
-                        elif verbose and code != latex2unicodemath[oc]:
+                        elif verbose and code != math_latex2unicode[oc]:
                             sys.stderr.write('(Macro %r already points to 0x%x instead of 0x%x (%r) )\n' %\
-                                             (oc, latex2unicodemath[oc], code, latex))
+                                             (oc, math_latex2unicode[oc], code, latex))
 
 
-
-}
-
-
-latexaccents2unicode = {
-    k:v for (v,k) in accents.items()
-}
 
 ############ mathematical greek mapping
 
@@ -221,10 +218,10 @@ assert len(greek_xelatex_input) == len(greek_xelatex_ouput), \
 ## symbols '∆Δ' ord 0x2206 0x394 
 
 
-latex2mathgreek = { greek_xelatex_input[n][1] : ord(greek_xelatex_ouput[n][-1]) for n in range(len(greek_xelatex_ouput)) }
+greek_latex2unicode = { greek_xelatex_input[n][1] : ord(greek_xelatex_ouput[n][-1]) for n in range(len(greek_xelatex_ouput)) }
 
-mathgreek2latex= {
-    k:v for (v,k) in latex2mathgreek.items()
+greek_unicode2latex= {
+    k:v for (v,k) in greek_latex2unicode.items()
 }
 
 #############################################
@@ -277,8 +274,8 @@ def decompose_to_tex(text, output):
     dec = unicodedata.decomposition(char)
     name = unicodedata.name(char, '')
     #
-    if prefer_unicode_math and code in unicodemath2latex and code > 0x7f:
-        latex = unicodemath2latex[code]
+    if prefer_unicode_math and code in math_unicode2latex and code > 0x7f:
+        latex = math_unicode2latex[code]
         if verbose: sys.stderr.write('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
         output.append(latex+' ')
         return
@@ -286,7 +283,7 @@ def decompose_to_tex(text, output):
     if (verbose and dec) or (verbose > 1 ):
         sys.stderr.write('%r:%d:%d decomposing %r %x %r %r %r\n' % (input_file, line_count, char_count,char,code,cat,dec,name))
     #
-    if cat in ("Mn", "Mc") and code in accents:
+    if cat in ("Mn", "Mc") and code in accents_unicode2latex:
         try:
             n = output.pop()
         except IndexError:
@@ -358,10 +355,10 @@ def decompose_to_tex(text, output):
         try:
             base = int(base, 16)
             acc = int(acc, 16)
-            if acc in accents:
+            if acc in accents_unicode2latex:
                 decompose_to_tex(chr(base), output)
                 n = output.pop()
-                output.append( "\\%s{%s}" %(accents[acc], n) )
+                output.append( "\\%s{%s}" %(accents_unicode2latex[acc], n) )
                 return
         except ValueError:
             sys.stderr.write('%r:%d:%d unsupported decomposition %r\n' % (input_file, line_count, char_count,dec))
@@ -373,8 +370,8 @@ def decompose_to_tex(text, output):
         output.append('\\' + char)
         return
     #
-    if code in unicodemath2latex and code > 0x7f:
-        latex = unicodemath2latex[code]
+    if code in math_unicode2latex and code > 0x7f:
+        latex = math_unicode2latex[code]
         if verbose: sys.stderr.write('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
         output.append(latex+' ')
         return
