@@ -5,7 +5,8 @@ convert unicode to LaTeX
 
 This script will convert unicode to a suitable LaTeX representation.
 
-- It will convert accents, e.g. è  → \`e 
+- It will convert accents, e.g. è  → \`e
+  or ũ → \widetilde{u}
   or Ç  → \c{C} .
   It will work fine   both the single codepoint Ç that is U+00C7 ;
   and the combining version Ç  that is  U+0043  followed by U+0327
