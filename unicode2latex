@@ -56,6 +56,12 @@ accents_latex2unicode = {
     k:v for (v,k) in accents_unicode2latex.items()
 }
 
+## these unicodes exists in unicode-math-table.tex but they do not work in practice
+
+math_unicode_skip = [
+    0x221A, # SQUARE ROOT
+    ]
+
 ## seed with some assignments that will supersed 'unicode-math-table.tex'
 
 math_unicode2latex = {
@@ -95,7 +101,11 @@ if os.path.isfile(unicode_math_file):
                 L = mathaccents_latex2unicode
             #
             if latex not in L:
-                L[latex] = code
+                if code in math_unicode_skip:
+                    if verbose:
+                        sys.stderr.write('(Skip %s 0x%x  )\n' % (latex, code))
+                else:
+                    L[latex] = code
             elif  L[latex] != code and verbose:
                 sys.stderr.write('(Duplicate entry %r %r , keeps 0x%x rejects 0x%x  )\n' % (latex, typ_, L[latex] , code))
             #
