@@ -43,15 +43,24 @@ will need `xelatex` or `lualatex` with packages
 Similarly if some particular unicode are used, such
 as ⇎ that will be converted to `\nLeftrightarrow`
 
+latex2unicode
+=============
+This script will convert  LaTeX to unicode.
+
+With the --greek arguments,
+  it will convert greek letters, '\alpha' → 𝛼
+
+With the --math arguments,
+  it will convert math symbols, e.g.  \cap → ∩ .
+
 Issues
 ------
 
 Currently accents are always converted using the non-math representation,
 for example Ù becomes `\~u` but in math-mode it should be  `\tilde u`
 
-latex2unicode
-=============
-convert LaTeX to unicode
 
-TODO
+Similarly the conversion of greek letters should be differentiated
+ inside and outside mathematical environments.
+
 

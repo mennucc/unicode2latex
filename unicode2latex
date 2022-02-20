@@ -13,15 +13,30 @@
 ##  and many decompositions
 ## https://www.compart.com/en/unicode/decomposition/
 
-"""
+doc_unicode2latex = r"""
 This script will convert unicode to a suitable LaTeX representation.
 
 It will convert accents, e.g. è  → \`{e}   ũ → \widetilde{u}.
 
 It will express fonts, e.g.  ⅅ → \symbbit{D} .
 
+it will convert greek letters, 𝛼  → '\alpha'
+
 It will convert math symbols, e.g.  ∩ → \cap .
 """
+
+doc_latex2unicode = r"""
+This script will convert  LaTeX to unicode.
+
+With the --greek arguments,
+  it will convert greek letters, '\alpha' → 𝛼
+
+With the --math arguments,
+  it will convert math symbols, e.g.  \cap → ∩ .
+
+It does not (yet) convert accents or fonts.
+"""
+
 
 import os, sys, copy, io, argparse, unicodedata, collections, subprocess, logging
 logger = logging.getLogger(__name__)
@@ -405,15 +420,41 @@ def uni2tex(text):
         pass
     return ''.join(output)
 
+def tex2uni(inp, out, D):
+    from FakePlasTeX import FakeContext, TokenizerPassThru 
+    t = TokenizerPassThru.TokenizerPassThru(inp, FakeContext.FakeContext())
+    t = iter(t)
+    for tok in t:
+        #print(repr(tok))
+        if isinstance(tok, TokenizerPassThru.EscapeSequence):
+            macroname = str(tok.macroName)
+            m = '\\' + tok.macroName
+            if m in D:
+                out.write(D[m])
+            else:
+                if '::' in tok:
+                    m= tok.split('::').pop()
+                out.write(m)
+        elif isinstance(tok, TokenizerPassThru.Comment):
+            out.write('%' + str(tok))
+        else:
+            out.write(str(tok))
+
+
+########## extracted and simplified from the plasTeX project
+#########
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='convert Unicode to LaTeX',
+    exe_name = os.path.basename(sys.argv[0])
+    is_latex2unicode = (exe_name == 'latex2unicode')
+    #
+    parser = argparse.ArgumentParser(description= 'convert LaTeX to Unicode' if is_latex2unicode else \
+                                        'convert Unicode to LaTeX',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     epilog=__doc__)
+                                     epilog = doc_latex2unicode if is_latex2unicode else doc_unicode2latex)
     parser.add_argument('--verbose','-v',action='count',default=verbose)
-    parser.add_argument('--prefer-unicode-math','-P',action='store_true',
-                        default=prefer_unicode_math,
-                        help='converto to unicode-math commands whenever possible')
     parser.add_argument('--output','-o',
+                        #required = is_latex2unicode,
                         help='output file')
     parser.add_argument('--input','-i',
                         help='read input file')
@@ -421,6 +462,17 @@ if __name__ == '__main__':
                         help='read stdin (instead of input file)')
     parser.add_argument('text', nargs='*',
                         help='the unicode text')
+    #
+    if is_latex2unicode:
+        parser.add_argument('--math','-M',action='store_true',
+                            help=r'converto math to unicode  e.g.: \int  → ∫ ')
+        parser.add_argument('--greek','-G',action='store_true',
+                            help=r'converto greek to unicode  e.g.: \alpha  → α ')
+    else:
+        parser.add_argument('--prefer-unicode-math','-P',action='store_true',
+                            default=prefer_unicode_math,
+                            help='converto to unicode-math commands whenever possible')
+    #
     args = parser.parse_args()
     #
     if 1 != bool(args.text) + bool(args.input) + bool(args.stdin):
@@ -428,6 +480,28 @@ if __name__ == '__main__':
         sys.exit(1)
     #
     verbose = args.verbose
+    #
+    if is_latex2unicode:
+        if args.output not in (None, '-'):
+            out = open(args.output, 'w')
+        else:
+            out = sys.stdout
+        #
+        if args.stdin:
+            inp = sys.stdin
+        elif args.text:
+            inp = io.StringIO(' '.join(args.text))
+        else:
+            inp = open(args.input)
+        #
+        D = {}
+        if args.math:
+            D.update( { k:chr(v) for k,v in math_latex2unicode.items() } )
+        if args.greek:
+            D.update( { k:chr(v) for k,v in greek_latex2unicode.items() }  )
+        tex2uni(inp, out, D)
+        sys.exit(0)
+    #
     prefer_unicode_math = args.prefer_unicode_math
     #
     if args.input or args.stdin:
