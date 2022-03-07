@@ -126,16 +126,18 @@ if unicode_math_table_file and os.path.isfile(unicode_math_table_file):
             #
             if latex not in L:
                 if code in math_unicode_skip:
-                    if verbose:
+                    if verbose >= 3:
                         sys.stderr.write('(Skip %s 0x%x  )\n' % (latex, code))
                 else:
                     L[latex] = code
-            elif  L[latex] != code and verbose:
+                    if verbose >= 3 : sys.stderr.write('(Assign %s → 0x%x   (%s))\n' % (latex, code, typ_))
+            elif  L[latex] != code and verbose >= 3:
                 sys.stderr.write('(Duplicate entry %r %r , keeps 0x%x rejects 0x%x  )\n' % (latex, typ_, L[latex] , code))
             #
             if code not in U:
                 U[code] = latex
-            elif verbose and U[code] != latex:
+                if verbose >= 3 : sys.stderr.write('(Assign 0x%x → %s (%s))\n' % (code, latex, typ_))
+            elif verbose >= 3 and U[code] != latex:
                 sys.stderr.write('(Prefer 0x%x → %s  instead of %s (%s))\n' % (code, U[code], latex, typ_))
             if '/' in info:
                 info = info.split(' ')
@@ -144,11 +146,11 @@ if unicode_math_table_file and os.path.isfile(unicode_math_table_file):
                         oc = '\\' + i[1:]
                         if oc not in L:
                             L[oc] = code
-                            if verbose > 2:
+                            if verbose >= 3:
                                 sys.stderr.write('(Macro %s points to to 0x%x as an alias for %s )\n' %\
                                                  (oc, code, latex))
-                        elif verbose and code != L[oc]:
-                            sys.stderr.write('(Macro %r already points to 0x%x, cannot alias to 0x%x (%s) )\n' %\
+                        elif verbose >= 3 and code != L[oc]:
+                            sys.stderr.write('(Macro %s already points to 0x%x, cannot alias to 0x%x (%s) )\n' %\
                                              (oc, L[oc], code, latex))
 
 
