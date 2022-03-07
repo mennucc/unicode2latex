@@ -45,19 +45,22 @@ verbose = 0
 
 prefer_unicode_math = False
 
+# fallback for locating the following files, if 'kpsewhich' misbehaves
 unicode_math_dir = '/usr/share/texlive/texmf-dist/tex/latex/unicode-math'
 
 try:
-    p = subprocess.Popen(['kpsewhich', 'unicode-math-table.tex'], stdout=subprocess.PIPE)
+  for j in 'unicode-math-table.tex' , 'unicode-math-xetex.sty':
+    p = subprocess.Popen(['kpsewhich', j], stdout=subprocess.PIPE)
     a = p.stdout.read().strip()
     p.wait()
     if not os.path.isfile(a):
-        logger.warning('kpsewhich : cannot locate unicode-math-table.tex')
-        a = os.path.join(unicode_math_dir, 'unicode-math-table.tex')
+        logger.warning('kpsewhich : cannot locate %r', j)
+        a = os.path.join(unicode_math_dir, j)
         if not os.path.isfile(a):
-            logger.warning('Cannot locate unicode-math-table.tex')
+            logger.warning('Cannot locate %r', j)
             a = None
-    unicode_math_table_file = a
+    f = j.replace('-','_')[:-4] + '_file'
+    globals()[f] = a
 except:
     logger.exception('While running kpsewhich unicode-math-table.tex')
 
