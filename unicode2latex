@@ -38,7 +38,7 @@ It does not (yet) convert accents or fonts.
 """
 
 
-import os, sys, copy, io, argparse, unicodedata, collections, subprocess, logging
+import os, sys, copy, io, argparse, unicodedata, collections, subprocess, logging, re
 logger = logging.getLogger(__name__)
 
 verbose = 0
@@ -153,6 +153,24 @@ if unicode_math_table_file and os.path.isfile(unicode_math_table_file):
                             sys.stderr.write('(Macro %s already points to 0x%x, cannot alias to 0x%x (%s) )\n' %\
                                              (oc, L[oc], code, latex))
 
+S = re.compile(r'\\def\s*{(\\[a-zA-Z]*)\s*}\s*{\s*(\\[a-zA-Z]*)\s*}')
+R = re.compile(r'\\def\s*(\\[a-zA-Z]*)\s*{\s*(\\[a-zA-Z]*)\s*}')
+if unicode_math_xetex_file is not None:
+    for n,l in enumerate(open(unicode_math_xetex_file)):
+        for a, b in S.findall(l) + R.findall(l):
+            code = math_latex2unicode.get(b)
+            if code is None:
+                if verbose >= 3 : sys.stderr.write('(file unicode-math-xetex.sty line %d unknown %s in %r)\n' % (  n, b, l))
+                continue
+            if a in math_latex2unicode:
+                if verbose >= 3 and code != math_latex2unicode[a]:
+                    sys.stderr.write('(file unicode-math-xetex.sty line %d macro %s pointed to 0x%x, ignoring 0x%x)\n' %\
+                                     (n, a, math_latex2unicode[a], code))
+                #math_latex2unicode[a] = code
+            else:
+                math_latex2unicode[a] = code
+                if verbose >= 3:
+                    sys.stderr.write('(file unicode-math-xetex.sty line %d added %s for %s → 0x%x)\n' % ( n, a, b, code))
 
 
 ############ mathematical greek mapping
