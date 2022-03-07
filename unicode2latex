@@ -48,6 +48,9 @@ prefer_unicode_math = False
 # fallback for locating the following files, if 'kpsewhich' misbehaves
 unicode_math_dir = '/usr/share/texlive/texmf-dist/tex/latex/unicode-math'
 
+# this is useless but it silence a program checker
+unicode_math_table_file = unicode_math_xetex_file = None
+
 try:
     for j in 'unicode-math-table.tex' , 'unicode-math-xetex.sty':
         p = subprocess.Popen(['kpsewhich', j], stdout=subprocess.PIPE)
@@ -434,7 +437,7 @@ def tex2uni(inp, out, D):
         #print(repr(tok))
         if isinstance(tok, TokenizerPassThru.EscapeSequence):
             macroname = str(tok.macroName)
-            m = '\\' + tok.macroName
+            m = '\\' + macroname
             if m in D:
                 out.write(D[m])
             else:
