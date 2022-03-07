@@ -45,16 +45,19 @@ verbose = 0
 
 prefer_unicode_math = False
 
-unicode_math_file = '/usr/share/texlive/texmf-dist/tex/latex/unicode-math/unicode-math-table.tex'
+unicode_math_dir = '/usr/share/texlive/texmf-dist/tex/latex/unicode-math'
 
 try:
     p = subprocess.Popen(['kpsewhich', 'unicode-math-table.tex'], stdout=subprocess.PIPE)
     a = p.stdout.read().strip()
     p.wait()
-    if os.path.isfile(a):
-        unicode_math_file = a
-    else:
-        logger.warning('Cannot locate unicode-math-table.tex')
+    if not os.path.isfile(a):
+        logger.warning('kpsewhich : cannot locate unicode-math-table.tex')
+        a = os.path.join(unicode_math_dir, 'unicode-math-table.tex')
+        if not os.path.isfile(a):
+            logger.warning('Cannot locate unicode-math-table.tex')
+            a = None
+    unicode_math_table_file = a
 except:
     logger.exception('While running kpsewhich unicode-math-table.tex')
 
@@ -98,8 +101,8 @@ mathaccents_latex2unicode = {}
 ## see also
 ## https://ctan.math.washington.edu/tex-archive/fonts/kpfonts-otf/doc/unimath-kpfonts.pdf
 
-if os.path.isfile(unicode_math_file):
-    for s in open(unicode_math_file):
+if unicode_math_table_file and os.path.isfile(unicode_math_table_file):
+    for s in open(unicode_math_table_file):
         if s.startswith('\\UnicodeMathSymbol'):
             s = s.split('{')
             code=int(s[1].lstrip('"').rstrip('}').rstrip(' '),16)
