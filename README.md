@@ -64,3 +64,10 @@ Similarly the conversion of greek letters should be differentiated
  inside and outside mathematical environments.
 
 
+Acknowledgements
+================
+
+The principal author has used the Python code editor
+`"wing8" by Wingware <http://wingware.com>`_
+to develop this project, with a license kindly donated
+by WingWare.
