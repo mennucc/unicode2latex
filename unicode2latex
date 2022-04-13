@@ -332,6 +332,11 @@ class Decompose_to_tex(object):
       self.add_font_modifiers = add_font_modifiers
       self.convert_accents = convert_accents
       self.prefer_unicode_math = prefer_unicode_math
+      self.math_unicode2latex = math_unicode2latex
+      self.extra_unicode2latex = {}
+  #
+  def update_extra(self, D):
+      self.extra_unicode2latex.update(D)
   #
   @property
   def result(self):
@@ -368,8 +373,14 @@ class Decompose_to_tex(object):
     dec = unicodedata.decomposition(char)
     name = unicodedata.name(char, '')
     #
-    if self.prefer_unicode_math and code in math_unicode2latex and code > 0x7f:
-        latex = math_unicode2latex[code]
+    if code in self.extra_unicode2latex :
+        latex = self.extra_unicode2latex[code]
+        if verbose: syslogger('%r:%d:%d extra %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
+        output.append(latex+' ')
+        return
+    #
+    if self.prefer_unicode_math and code in self.math_unicode2latex and code > 0x7f:
+        latex = self.math_unicode2latex[code]
         if verbose: syslogger('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
         output.append(latex+' ')
         return
@@ -480,8 +491,10 @@ class Decompose_to_tex(object):
         syslogger('%r:%d:%d could not convert %r %x to ascii\n' % (input_file, line_count, char_count,char,code))
     output.append(char)
         
-def uni2tex(text, **k):
+def uni2tex(text, extra = None, **k):
     decompose_to_tex = Decompose_to_tex(**k)
+    if extra:
+        decompose_to_tex.update_extra(extra)
     decompose_to_tex.parse(text)
     return decompose_to_tex.result
 
