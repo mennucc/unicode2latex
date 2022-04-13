@@ -459,14 +459,10 @@ class Decompose_to_tex(object):
         sys.stderr.write('%r:%d:%d could not convert %r %x to ascii\n' % (input_file, line_count, char_count,char,code))
     output.append(char)
         
-def uni2tex(text):
-    iterable = iter(text)
+def uni2tex(text, add_font_modifiers=True):
     output = []
-    try:
-        while True:
-            decompose_to_tex(iterable, output)
-    except StopIteration:
-        pass
+    decompose_to_tex = Decompose_to_tex(output, add_font_modifiers)
+    decompose_to_tex.parse(text)
     return ''.join(output)
 
 def tex2uni(inp, out, D):
@@ -564,13 +560,13 @@ if __name__ == '__main__':
         if args.stdin:
             input_file = 'stdin'
             for L in sys.stdin:
-                out.write(uni2tex(L))
+                out.write(uni2tex(L, add_font_modifiers=(not args.no_fonts)))
                 char_count = 0
                 line_count += 1
         else:
             input_file = args.input
             for L in open(args.input):
-                out.write(uni2tex(L))
+                out.write(uni2tex(L, add_font_modifiers=(not args.no_fonts)))
                 char_count = 0
                 line_count += 1
         sys.exit(0)
@@ -578,5 +574,5 @@ if __name__ == '__main__':
     for  t in args.text:
         if not isinstance(t,str):
             t = str(t, "utf-8")
-        print(uni2tex(t))
+        print(uni2tex(t, add_font_modifiers=(not args.no_fonts)))
     sys.exit(0)
