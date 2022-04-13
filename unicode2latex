@@ -461,7 +461,7 @@ class Decompose_to_tex(object):
         char = name.split()[-1].lower()
         if 'SMALL' not in name:
             char = char[0].upper() + char[1:]
-        output.append('\\' + char)
+        output.append('\\' + char + ' ')
         return
     #
     if code in math_unicode2latex and code > 0x7f:
