@@ -320,15 +320,35 @@ char_count = 0
 input_file = 'cmdline'
 
 
-def decompose_to_tex(text, output):
+class Decompose_to_tex(object):
+  def __init__(self, output, add_font_modifiers=True):
+      self.output = output
+      self.add_font_modifiers = add_font_modifiers
+  #
+  def char(self, char):
+      assert isinstance(text,str) and len(text) == 1
+      return self._docode(ord(text))
+  #
+  def parse(self, text):
+      self.iterator = iter(text)
+      try:
+          while True:
+              self._donext()
+      except StopIteration:
+          pass
+  #
+  def _donext(self):
     global char_count
-    if isinstance(text,str):
-        assert(len(text) == 1)
-        char = text
-    else:
+    #
     #if isinstance(text,  collections.abc.Iterable):
-        char = next(text)
-        char_count += 1
+    char = next(self.iterator)
+    char_count += 1
+    code = ord(char)
+    return self._docode(char)
+  #
+  def _docode(self, char, useless=None):
+    decompose_to_tex = self._docode
+    output = self.output
     code = ord(char)
     cat = unicodedata.category(char)
     dec = unicodedata.decomposition(char)
