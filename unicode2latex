@@ -321,9 +321,10 @@ input_file = 'cmdline'
 
 
 class Decompose_to_tex(object):
-  def __init__(self, output, add_font_modifiers=True):
+  def __init__(self, output, add_font_modifiers=True, convert_accents = True):
       self.output = output
       self.add_font_modifiers = add_font_modifiers
+      self.convert_accents = convert_accents
   #
   def char(self, char):
       assert isinstance(text,str) and len(text) == 1
@@ -363,7 +364,7 @@ class Decompose_to_tex(object):
     if (verbose and dec) or (verbose > 1 ):
         sys.stderr.write('%r:%d:%d decomposing %r %x %r %r %r\n' % (input_file, line_count, char_count,char,code,cat,dec,name))
     #
-    if cat in ("Mn", "Mc") and code in accents_unicode2latex:
+    if cat in ("Mn", "Mc") and code in accents_unicode2latex and self.convert_accents :
         try:
             n = output.pop()
         except IndexError:
@@ -439,7 +440,7 @@ class Decompose_to_tex(object):
         try:
             base = int(base, 16)
             acc = int(acc, 16)
-            if acc in accents_unicode2latex:
+            if acc in accents_unicode2latex and self.convert_accents:
                 decompose_to_tex(chr(base), output)
                 n = output.pop()
                 output.append( "\\%s{%s}" %(accents_unicode2latex[acc], n) )
@@ -463,9 +464,9 @@ class Decompose_to_tex(object):
         sys.stderr.write('%r:%d:%d could not convert %r %x to ascii\n' % (input_file, line_count, char_count,char,code))
     output.append(char)
         
-def uni2tex(text, add_font_modifiers=True):
+def uni2tex(text, add_font_modifiers=True, convert_accents=True):
     output = []
-    decompose_to_tex = Decompose_to_tex(output, add_font_modifiers)
+    decompose_to_tex = Decompose_to_tex(output, add_font_modifiers, convert_accents)
     decompose_to_tex.parse(text)
     return ''.join(output)
 
@@ -523,6 +524,8 @@ if __name__ == '__main__':
                             help='converto to unicode-math commands whenever possible')
         parser.add_argument('--no-fonts',action='store_true',
                             help='do not add font modifiers')
+        parser.add_argument('--no-accents',action='store_true',
+                            help='do not convert accents')
     #
     args = parser.parse_args()
     #
@@ -564,13 +567,13 @@ if __name__ == '__main__':
         if args.stdin:
             input_file = 'stdin'
             for L in sys.stdin:
-                out.write(uni2tex(L, add_font_modifiers=(not args.no_fonts)))
+                out.write(uni2tex(L, add_font_modifiers=(not args.no_fonts), convert_accents=(not args.no_accents)))
                 char_count = 0
                 line_count += 1
         else:
             input_file = args.input
             for L in open(args.input):
-                out.write(uni2tex(L, add_font_modifiers=(not args.no_fonts)))
+                out.write(uni2tex(L, add_font_modifiers=(not args.no_fonts), convert_accents=(not args.no_accents)))
                 char_count = 0
                 line_count += 1
         sys.exit(0)
@@ -578,5 +581,5 @@ if __name__ == '__main__':
     for  t in args.text:
         if not isinstance(t,str):
             t = str(t, "utf-8")
-        print(uni2tex(t, add_font_modifiers=(not args.no_fonts)))
+        print(uni2tex(t, add_font_modifiers=(not args.no_fonts), convert_accents=(not args.no_accents)))
     sys.exit(0)
