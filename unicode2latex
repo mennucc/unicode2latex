@@ -41,6 +41,12 @@ It does not (yet) convert accents or fonts.
 import os, sys, copy, io, argparse, unicodedata, collections, subprocess, logging, re
 logger = logging.getLogger(__name__)
 
+if __name__ == '__main__':
+    syslogger = sys.stderr.write
+else:
+    syslogger = logger.warning
+
+
 verbose = 0
 
 prefer_unicode_math = False
@@ -120,25 +126,25 @@ if unicode_math_table_file and os.path.isfile(unicode_math_table_file):
             L = math_latex2unicode
             if 'accent' in typ_:
                 if not (  ( 0x300 <= code and code <= 0x36F ) or  (0x20D0 <= code and code <= 0x20FF) ):
-                    sys.stderr.write('(Warning accent %r code 0x%x out of standard unicode table)\n' % (latex, code))
+                    syslogger('(Warning accent %r code 0x%x out of standard unicode table)\n' % (latex, code))
                 U = mathaccents_unicode2latex
                 L = mathaccents_latex2unicode
             #
             if latex not in L:
                 if code in math_unicode_skip:
                     if verbose >= 3:
-                        sys.stderr.write('(Skip %s 0x%x  )\n' % (latex, code))
+                        syslogger('(Skip %s 0x%x  )\n' % (latex, code))
                 else:
                     L[latex] = code
-                    if verbose >= 3 : sys.stderr.write('(Assign %s → 0x%x   (%s))\n' % (latex, code, typ_))
+                    if verbose >= 3 : syslogger('(Assign %s → 0x%x   (%s))\n' % (latex, code, typ_))
             elif  L[latex] != code and verbose >= 3:
-                sys.stderr.write('(Duplicate entry %r %r , keeps 0x%x rejects 0x%x  )\n' % (latex, typ_, L[latex] , code))
+                syslogger('(Duplicate entry %r %r , keeps 0x%x rejects 0x%x  )\n' % (latex, typ_, L[latex] , code))
             #
             if code not in U:
                 U[code] = latex
-                if verbose >= 3 : sys.stderr.write('(Assign 0x%x → %s (%s))\n' % (code, latex, typ_))
+                if verbose >= 3 : syslogger('(Assign 0x%x → %s (%s))\n' % (code, latex, typ_))
             elif verbose >= 3 and U[code] != latex:
-                sys.stderr.write('(Prefer 0x%x → %s  instead of %s (%s))\n' % (code, U[code], latex, typ_))
+                syslogger('(Prefer 0x%x → %s  instead of %s (%s))\n' % (code, U[code], latex, typ_))
             if '/' in info:
                 info = info.split(' ')
                 for i in info:
@@ -147,10 +153,10 @@ if unicode_math_table_file and os.path.isfile(unicode_math_table_file):
                         if oc not in L:
                             L[oc] = code
                             if verbose >= 3:
-                                sys.stderr.write('(Macro %s points to to 0x%x as an alias for %s )\n' %\
+                                syslogger('(Macro %s points to to 0x%x as an alias for %s )\n' %\
                                                  (oc, code, latex))
                         elif verbose >= 3 and code != L[oc]:
-                            sys.stderr.write('(Macro %s already points to 0x%x, cannot alias to 0x%x (%s) )\n' %\
+                            syslogger('(Macro %s already points to 0x%x, cannot alias to 0x%x (%s) )\n' %\
                                              (oc, L[oc], code, latex))
 
 S = re.compile(r'\\def\s*{(\\[a-zA-Z]*)\s*}\s*{\s*(\\[a-zA-Z]*)\s*}')
@@ -160,17 +166,17 @@ if unicode_math_xetex_file is not None:
         for a, b in S.findall(l) + R.findall(l):
             code = math_latex2unicode.get(b)
             if code is None:
-                if verbose >= 3 : sys.stderr.write('(file unicode-math-xetex.sty line %d unknown %s in %r)\n' % (  n, b, l))
+                if verbose >= 3 : syslogger('(file unicode-math-xetex.sty line %d unknown %s in %r)\n' % (  n, b, l))
                 continue
             if a in math_latex2unicode:
                 if verbose >= 3 and code != math_latex2unicode[a]:
-                    sys.stderr.write('(file unicode-math-xetex.sty line %d macro %s pointed to 0x%x, ignoring 0x%x)\n' %\
+                    syslogger('(file unicode-math-xetex.sty line %d macro %s pointed to 0x%x, ignoring 0x%x)\n' %\
                                      (n, a, math_latex2unicode[a], code))
                 #math_latex2unicode[a] = code
             else:
                 math_latex2unicode[a] = code
                 if verbose >= 3:
-                    sys.stderr.write('(file unicode-math-xetex.sty line %d added %s for %s → 0x%x)\n' % ( n, a, b, code))
+                    syslogger('(file unicode-math-xetex.sty line %d added %s for %s → 0x%x)\n' % ( n, a, b, code))
 
 
 ############ mathematical greek mapping
@@ -357,18 +363,18 @@ class Decompose_to_tex(object):
     #
     if prefer_unicode_math and code in math_unicode2latex and code > 0x7f:
         latex = math_unicode2latex[code]
-        if verbose: sys.stderr.write('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
+        if verbose: syslogger('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
         output.append(latex+' ')
         return
     #
     if (verbose and dec) or (verbose > 1 ):
-        sys.stderr.write('%r:%d:%d decomposing %r %x %r %r %r\n' % (input_file, line_count, char_count,char,code,cat,dec,name))
+        syslogger('%r:%d:%d decomposing %r %x %r %r %r\n' % (input_file, line_count, char_count,char,code,cat,dec,name))
     #
     if cat in ("Mn", "Mc") and code in accents_unicode2latex and self.convert_accents :
         try:
             n = output.pop()
         except IndexError:
-            sys.stderr.write('%r:%d:%d accents with no preceding character\n' % (input_file, line))
+            syslogger('%r:%d:%d accents with no preceding character\n' % (input_file, line))
             n=' '
         # FIXME should know if in math mode or not
         output.append( "\\%s{%s}" %(accents_unicode2latex[code], n) )
@@ -421,7 +427,7 @@ class Decompose_to_tex(object):
                     l = int(l, 16)
                     decompose_to_tex(chr(l), output)
                 return
-            sys.stderr.write('%r:%d:%d unsupported <compat> %r\n' % (input_file, line_count, char_count,dec))
+            syslogger('%r:%d:%d unsupported <compat> %r\n' % (input_file, line_count, char_count,dec))
         elif base in modifiers:
             mod = modifiers[base]
             acc = int(acc, 16)
@@ -430,7 +436,7 @@ class Decompose_to_tex(object):
             output.append( mod % n )
             return
         elif base.startswith('<'):
-            sys.stderr.write('%r:%d:%d unsupported modifier %r\n' % (input_file, line_count, char_count,base))
+            syslogger('%r:%d:%d unsupported modifier %r\n' % (input_file, line_count, char_count,base))
             #acc = int(acc, 16)
             #decompose_to_tex(chr(acc), output)
             #n = output.pop()
@@ -440,13 +446,16 @@ class Decompose_to_tex(object):
         try:
             base = int(base, 16)
             acc = int(acc, 16)
-            if acc in accents_unicode2latex and self.convert_accents:
+            if acc in accents_unicode2latex:
+                if not self.convert_accents:
+                    output.append(char)
+                    return
                 decompose_to_tex(chr(base), output)
                 n = output.pop()
                 output.append( "\\%s{%s}" %(accents_unicode2latex[acc], n) )
                 return
         except ValueError:
-            sys.stderr.write('%r:%d:%d unsupported decomposition %r\n' % (input_file, line_count, char_count,dec))
+            syslogger('%r:%d:%d unsupported decomposition %r\n' % (input_file, line_count, char_count,dec))
     #
     if name.startswith('GREEK'):
         char = name.split()[-1].lower()
@@ -457,11 +466,11 @@ class Decompose_to_tex(object):
     #
     if code in math_unicode2latex and code > 0x7f:
         latex = math_unicode2latex[code]
-        if verbose: sys.stderr.write('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
+        if verbose: syslogger('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
         output.append(latex+' ')
         return
     if code > 127:
-        sys.stderr.write('%r:%d:%d could not convert %r %x to ascii\n' % (input_file, line_count, char_count,char,code))
+        syslogger('%r:%d:%d could not convert %r %x to ascii\n' % (input_file, line_count, char_count,char,code))
     output.append(char)
         
 def uni2tex(text, add_font_modifiers=True, convert_accents=True):
