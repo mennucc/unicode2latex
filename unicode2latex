@@ -383,6 +383,10 @@ class Decompose_to_tex(object):
         decsplit = dec.split()
         base, acc = decsplit[:2]
         if base == '<font>':
+            if not self.add_font_modifiers :
+                acc = int(acc, 16)
+                decompose_to_tex(chr(acc), output)
+                return
             mod = '%s'
             N = copy.copy(name)
             for s,l in fonts:
