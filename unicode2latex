@@ -575,13 +575,11 @@ if __name__ == '__main__':
             logger.warning('Cmdline %r ignored', args.text)
         if args.stdin:
             input_file = 'stdin'
-            for L in sys.stdin:
-                out.write(uni2tex(L, add_font_modifiers=(not args.no_fonts), convert_accents=(not args.no_accents)))
-                char_count = 0
-                line_count += 1
+            I = sys.stdin
         else:
             input_file = args.input
-            for L in open(args.input):
+            I =  open(args.input)
+        for L in I:
                 out.write(uni2tex(L, add_font_modifiers=(not args.no_fonts), convert_accents=(not args.no_accents)))
                 char_count = 0
                 line_count += 1
