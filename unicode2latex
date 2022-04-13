@@ -521,6 +521,8 @@ if __name__ == '__main__':
         parser.add_argument('--prefer-unicode-math','-P',action='store_true',
                             default=prefer_unicode_math,
                             help='converto to unicode-math commands whenever possible')
+        parser.add_argument('--no-fonts',action='store_true',
+                            help='do not add font modifiers')
     #
     args = parser.parse_args()
     #
