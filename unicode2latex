@@ -49,7 +49,7 @@ else:
 
 verbose = 0
 
-prefer_unicode_math = False
+global_prefer_unicode_math = False
 
 # fallback for locating the following files, if 'kpsewhich' misbehaves
 unicode_math_dir = '/usr/share/texlive/texmf-dist/tex/latex/unicode-math'
@@ -327,10 +327,17 @@ input_file = 'cmdline'
 
 
 class Decompose_to_tex(object):
-  def __init__(self, output, add_font_modifiers=True, convert_accents = True):
-      self.output = output
+  def __init__(self, add_font_modifiers=True, convert_accents = True, prefer_unicode_math = global_prefer_unicode_math):
+      self.output = []
       self.add_font_modifiers = add_font_modifiers
       self.convert_accents = convert_accents
+      self.prefer_unicode_math = prefer_unicode_math
+  #
+  @property
+  def result(self):
+      s = ''.join(self.output)
+      self.output = []
+      return s
   #
   def char(self, char):
       assert isinstance(text,str) and len(text) == 1
@@ -361,7 +368,7 @@ class Decompose_to_tex(object):
     dec = unicodedata.decomposition(char)
     name = unicodedata.name(char, '')
     #
-    if prefer_unicode_math and code in math_unicode2latex and code > 0x7f:
+    if self.prefer_unicode_math and code in math_unicode2latex and code > 0x7f:
         latex = math_unicode2latex[code]
         if verbose: syslogger('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
         output.append(latex+' ')
@@ -473,11 +480,10 @@ class Decompose_to_tex(object):
         syslogger('%r:%d:%d could not convert %r %x to ascii\n' % (input_file, line_count, char_count,char,code))
     output.append(char)
         
-def uni2tex(text, add_font_modifiers=True, convert_accents=True):
-    output = []
-    decompose_to_tex = Decompose_to_tex(output, add_font_modifiers, convert_accents)
+def uni2tex(text, **k):
+    decompose_to_tex = Decompose_to_tex(**k)
     decompose_to_tex.parse(text)
-    return ''.join(output)
+    return decompose_to_tex.result
 
 def tex2uni(inp, out, D):
     from FakePlasTeX import FakeContext, TokenizerPassThru 
@@ -529,7 +535,7 @@ if __name__ == '__main__':
                             help=r'converto greek to unicode  e.g.: \alpha  → α ')
     else:
         parser.add_argument('--prefer-unicode-math','-P',action='store_true',
-                            default=prefer_unicode_math,
+                            default=global_prefer_unicode_math,
                             help='converto to unicode-math commands whenever possible')
         parser.add_argument('--no-fonts',action='store_true',
                             help='do not add font modifiers')
@@ -565,8 +571,8 @@ if __name__ == '__main__':
         tex2uni(inp, out, D)
         sys.exit(0)
     #
-    prefer_unicode_math = args.prefer_unicode_math
-    #
+    decompose_to_tex =  Decompose_to_tex(add_font_modifiers=(not args.no_fonts), convert_accents=(not args.no_accents),
+                                         prefer_unicode_math = args.prefer_unicode_math)
     if args.input or args.stdin:
         out=sys.stdout
         if args.output:
@@ -580,7 +586,8 @@ if __name__ == '__main__':
             input_file = args.input
             I =  open(args.input)
         for L in I:
-                out.write(uni2tex(L, add_font_modifiers=(not args.no_fonts), convert_accents=(not args.no_accents)))
+                decompose_to_tex.parse(L)
+                out.write(decompose_to_tex.result)
                 char_count = 0
                 line_count += 1
         sys.exit(0)
@@ -588,5 +595,6 @@ if __name__ == '__main__':
     for  t in args.text:
         if not isinstance(t,str):
             t = str(t, "utf-8")
-        print(uni2tex(t, add_font_modifiers=(not args.no_fonts), convert_accents=(not args.no_accents)))
+        decompose_to_tex.parse(t)
+        print(decompose_to_tex.result)
     sys.exit(0)
