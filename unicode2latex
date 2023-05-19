@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 if __name__ == '__main__':
     syslogger = sys.stderr.write
 else:
-    syslogger = logger.warning
+    def syslogger(x) : return logger.warning(x.rstrip())
 
 
 verbose = 0
