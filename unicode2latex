@@ -344,7 +344,7 @@ class Decompose_to_tex(object):
       self.output = []
       return s
   #
-  def char(self, char):
+  def char(self, text):
       assert isinstance(text,str) and len(text) == 1
       return self._docode(ord(text))
   #
@@ -392,7 +392,7 @@ class Decompose_to_tex(object):
         try:
             n = output.pop()
         except IndexError:
-            syslogger('%r:%d:%d accents with no preceding character\n' % (input_file, line))
+            syslogger('%r:%d:%d accents with no preceding character\n' % (input_file, char))
             n=' '
         # FIXME should know if in math mode or not
         output.append( "\\%s{%s}" %(accents_unicode2latex[code], n) )
