@@ -90,6 +90,7 @@ accents_latex2unicode = {
 
 math_unicode_skip = [
     0x221A, # SQUARE ROOT
+    0x23DF, # BOTTOM CURLY BRACKET
     ]
 
 ## seed with some assignments that will supersed 'unicode-math-table.tex'
