@@ -99,7 +99,11 @@ math_unicode2latex = {
     0xD7 : '\\times',
     0x221E : '\\infty',
     0xab : '\\guillemotleft' , 0xbb : '\\guillemotright',
-    0x25E6 : '\\circ',
+    # note that previously circ was mapped to
+    #   \smwhtcircle , unicode WHITE BULLET
+    # now it is mapped to
+    #   \vysmwhtcircle , unicode RING OPERATOR
+    0x2218 : '\\circ',
 }
 
 math_latex2unicode = {
