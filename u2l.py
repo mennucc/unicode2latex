@@ -482,6 +482,8 @@ class Decompose_to_tex(object):
     #
     if name.startswith('GREEK'):
         char = name.split()[-1].lower()
+        if char == 'lamda':
+            char = 'lambda'
         if 'SMALL' not in name:
             char = char[0].upper() + char[1:]
         output.append('\\' + char + ' ')
