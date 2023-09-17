@@ -192,6 +192,19 @@ if verbose >= 1:
         if len(v)>1:
             syslogger('multiple latex to unicode, %r -> %r\n' %(k,v))
 
+## table of replacement, that is, if you translate latex1 -> unicode -> latex2
+## this lists all cases in which latex1 != latex2
+
+math_replacements = {
+}
+
+for k,v in math_latex2unicode.items():
+    c = v[0]
+    l2 = math_unicode2latex.get(c,[None])[0]
+    if k != l2:
+        math_replacements[k] = l2
+
+
 ############ mathematical greek mapping
 
 #This mapping 
