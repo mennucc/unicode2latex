@@ -96,18 +96,21 @@ math_unicode_skip = [
 ## seed with some assignments that will supersed 'unicode-math-table.tex'
 
 math_unicode2latex = {
-    0xD7 : '\\times',
-    0x221E : '\\infty',
-    0xab : '\\guillemotleft' , 0xbb : '\\guillemotright',
+    0xD7 : ['\\times'],
+    0x221E : ['\\infty'],
+    0xab : ['\\guillemotleft'],
+    0xbb : ['\\guillemotright'],
     # note that previously circ was mapped to
     #   \smwhtcircle , unicode WHITE BULLET
     # now it is mapped to
     #   \vysmwhtcircle , unicode RING OPERATOR
-    0x2218 : '\\circ',
+    0x2218 : ['\\circ'],
+    # in the table 0x21D4 is associated to \Leftrightarrow
+    0x21D4 : ['\\iff'],
 }
 
 math_latex2unicode = {
-    k:v for (v,k) in math_unicode2latex.items()
+    k[0]:[v] for (v,k) in math_unicode2latex.items()
 }
 
 
@@ -140,49 +143,54 @@ if unicode_math_table_file and os.path.isfile(unicode_math_table_file):
                     if verbose >= 3:
                         syslogger('(Skip %s 0x%x  )\n' % (latex, code))
                 else:
-                    L[latex] = code
+                    L[latex] = [code]
                     if verbose >= 3 : syslogger('(Assign %s → 0x%x   (%s))\n' % (latex, code, typ_))
-            elif  L[latex] != code and verbose >= 3:
-                syslogger('(Duplicate entry %r %r , keeps 0x%x rejects 0x%x  )\n' % (latex, typ_, L[latex] , code))
+            elif code not in L[latex]:
+                L[latex].append(code)
             #
             if code not in U:
-                U[code] = latex
+                U[code] = [latex]
                 if verbose >= 3 : syslogger('(Assign 0x%x → %s (%s))\n' % (code, latex, typ_))
-            elif verbose >= 3 and U[code] != latex:
-                syslogger('(Prefer 0x%x → %s  instead of %s (%s))\n' % (code, U[code], latex, typ_))
+            elif latex not in U[code]:
+                U[code].append(latex)   
             if '/' in info:
                 info = info.split(' ')
                 for i in info:
                     if i and i[0] == '/':
                         oc = '\\' + i[1:]
                         if oc not in L:
-                            L[oc] = code
-                            if verbose >= 3:
-                                syslogger('(Macro %s points to to 0x%x as an alias for %s )\n' %\
-                                                 (oc, code, latex))
-                        elif verbose >= 3 and code != L[oc]:
-                            syslogger('(Macro %s already points to 0x%x, cannot alias to 0x%x (%s) )\n' %\
-                                             (oc, L[oc], code, latex))
+                            L[oc] = [code]
+                        elif code not in L[oc]:
+                            L[oc].append(code)
+
 
 S = re.compile(r'\\def\s*{(\\[a-zA-Z]*)\s*}\s*{\s*(\\[a-zA-Z]*)\s*}')
 R = re.compile(r'\\def\s*(\\[a-zA-Z]*)\s*{\s*(\\[a-zA-Z]*)\s*}')
 if unicode_math_xetex_file is not None:
     for n,l in enumerate(open(unicode_math_xetex_file)):
         for a, b in S.findall(l) + R.findall(l):
-            code = math_latex2unicode.get(b)
-            if code is None:
+            codes = math_latex2unicode.get(b)
+            if codes is None:
                 if verbose >= 3 : syslogger('(file unicode-math-xetex.sty line %d unknown %s in %r)\n' % (  n, b, l))
                 continue
             if a in math_latex2unicode:
-                if verbose >= 3 and code != math_latex2unicode[a]:
-                    syslogger('(file unicode-math-xetex.sty line %d macro %s pointed to 0x%x, ignoring 0x%x)\n' %\
-                                     (n, a, math_latex2unicode[a], code))
-                #math_latex2unicode[a] = code
+                oldcodes = math_latex2unicode[a]
+                for code in codes:
+                    if code not in oldcodes:
+                        oldcodes.append(code)
             else:
-                math_latex2unicode[a] = code
+                math_latex2unicode[a] = codes
                 if verbose >= 3:
                     syslogger('(file unicode-math-xetex.sty line %d added %s for %s → 0x%x)\n' % ( n, a, b, code))
 
+
+if verbose >= 1:
+    for k,v in math_unicode2latex.items():
+        if len(v)>1:
+            syslogger('multiple unicode to latex, %r -> %r\n' %(k,v))
+    for k,v in math_latex2unicode.items():
+        if len(v)>1:
+            syslogger('multiple latex to unicode, %r -> %r\n' %(k,v))
 
 ############ mathematical greek mapping
 
@@ -385,7 +393,7 @@ class Decompose_to_tex(object):
         return
     #
     if self.prefer_unicode_math and code in self.math_unicode2latex and code > 0x7f:
-        latex = self.math_unicode2latex[code]
+        latex = self.math_unicode2latex[code][0]
         if verbose: syslogger('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
         output.append(latex+' ')
         return
@@ -490,7 +498,7 @@ class Decompose_to_tex(object):
         return
     #
     if code in math_unicode2latex and code > 0x7f:
-        latex = math_unicode2latex[code]
+        latex = math_unicode2latex[code][0]
         if verbose: syslogger('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
         output.append(latex+' ')
         return
@@ -585,7 +593,7 @@ if __name__ == '__main__':
         #
         D = {}
         if args.math:
-            D.update( { k:chr(v) for k,v in math_latex2unicode.items() } )
+            D.update( { k:chr(v[0]) for k,v in math_latex2unicode.items() } )
         if args.greek:
             D.update( { k:chr(v) for k,v in greek_latex2unicode.items() }  )
         tex2uni(inp, out, D)
