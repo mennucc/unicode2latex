@@ -113,6 +113,18 @@ math_latex2unicode = {
     k[0]:[v] for (v,k) in math_unicode2latex.items()
 }
 
+## add some one-way conversions
+
+math_latex2unicode.update({
+    #U+2016 DOUBLE VERTICAL LINE
+    # this will be back-converted to \Vert
+    r'\|' : [0x2016],
+    # U+21D4 LEFT RIGHT DOUBLE ARROW
+    # this will be back-converted to \iff , a
+    r'\iff' : [0x21D4] ,
+    })
+
+
 
 mathaccents_unicode2latex = {}
 
