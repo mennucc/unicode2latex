@@ -107,6 +107,10 @@ math_unicode2latex = {
     0x2218 : ['\\circ'],
     # in the table 0x21D4 is associated to \Leftrightarrow
     0x21D4 : ['\\iff'],
+    # convert unicode — EM DASH to ---
+    # note that this is currently a one-way conversion,
+    # latex2unicode does not convert --- to —
+    0x2014 : ['---'],
 }
 
 math_latex2unicode = {
