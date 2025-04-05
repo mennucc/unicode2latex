@@ -445,7 +445,7 @@ class Decompose_to_tex(object):
             dec =  dec.split()[1:]
             dec = list(map(lambda x : chr(int(x,16)), dec))
             if dec[-1] == '/': dec[-1] = ''
-            output.append( '{\sfrac{%s}{%s}}' % (dec[0],dec[-1]))
+            output.append( r'{\sfrac{%s}{%s}}' % (dec[0],dec[-1]))
             return
         decsplit = dec.split()
         base, acc = decsplit[:2]
@@ -472,7 +472,7 @@ class Decompose_to_tex(object):
             acc = int(acc, 16)
             decompose_to_tex(chr(acc), output)
             n = output.pop()
-            output.append( '{\scriptsize{%s}}' % n )
+            output.append( r'{\scriptsize{%s}}' % n )
             return
         if base == '<compat>':
             # greek characters, `var` version
