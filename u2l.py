@@ -71,7 +71,7 @@ try:
                 a = None
         f = j.replace('-','_')[:-4] + '_file'
         globals()[f] = a
-except:
+except Exception as e_:
     logger.exception('While running kpsewhich unicode-math-table.tex')
 
 ## https://en.wikipedia.org/wiki/Combining_Diacritical_Marks
