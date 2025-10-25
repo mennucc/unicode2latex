@@ -365,19 +365,18 @@ modifiers = {
 }
 
 
-line_count = 1
-char_count = 0
-input_file = 'cmdline'
-
-
 class Decompose_to_tex(object):
-  def __init__(self, add_font_modifiers=True, convert_accents = True, prefer_unicode_math = global_prefer_unicode_math):
+  def __init__(self, add_font_modifiers=True, convert_accents = True, prefer_unicode_math = global_prefer_unicode_math, input_file='cmdline'):
       self.output = []
       self.add_font_modifiers = add_font_modifiers
       self.convert_accents = convert_accents
       self.prefer_unicode_math = prefer_unicode_math
       self.math_unicode2latex = math_unicode2latex
       self.extra_unicode2latex = {}
+      # Instance variables for tracking position (thread-safe)
+      self.line_count = 1
+      self.char_count = 0
+      self.input_file = input_file
   #
   def update_extra(self, D):
       self.extra_unicode2latex.update(D)
@@ -401,11 +400,10 @@ class Decompose_to_tex(object):
           pass
   #
   def _donext(self):
-    global char_count
     #
     #if isinstance(text,  collections.abc.Iterable):
     char = next(self.iterator)
-    char_count += 1
+    self.char_count += 1
     code = ord(char)
     return self._docode(char)
   #
@@ -419,24 +417,24 @@ class Decompose_to_tex(object):
     #
     if code in self.extra_unicode2latex :
         latex = self.extra_unicode2latex[code]
-        if verbose: syslogger('%r:%d:%d extra %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
+        if verbose: syslogger('%r:%d:%d extra %r %x %s\n' % (self.input_file, self.line_count, self.char_count,char,code,latex))
         output.append(latex+' ')
         return
     #
     if self.prefer_unicode_math and code in self.math_unicode2latex and code > 0x7f:
         latex = self.math_unicode2latex[code][0]
-        if verbose: syslogger('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
+        if verbose: syslogger('%r:%d:%d math %r %x %s\n' % (self.input_file, self.line_count, self.char_count,char,code,latex))
         output.append(latex+' ')
         return
     #
     if (verbose and dec) or (verbose > 1 ):
-        syslogger('%r:%d:%d decomposing %r %x %r %r %r\n' % (input_file, line_count, char_count,char,code,cat,dec,name))
+        syslogger('%r:%d:%d decomposing %r %x %r %r %r\n' % (self.input_file, self.line_count, self.char_count,char,code,cat,dec,name))
     #
     if cat in ("Mn", "Mc") and code in accents_unicode2latex and self.convert_accents :
         try:
             n = output.pop()
         except IndexError:
-            syslogger('%r: accents with no preceding character %r\n' % (input_file, char))
+            syslogger('%r: accents with no preceding character %r\n' % (self.input_file, char))
             n=' '
         # FIXME should know if in math mode or not
         output.append( "\\%s{%s}" %(accents_unicode2latex[code], n) )
@@ -489,7 +487,7 @@ class Decompose_to_tex(object):
                     l = int(l, 16)
                     decompose_to_tex(chr(l), output)
                 return
-            syslogger('%r:%d:%d unsupported <compat> %r\n' % (input_file, line_count, char_count,dec))
+            syslogger('%r:%d:%d unsupported <compat> %r\n' % (self.input_file, self.line_count, self.char_count,dec))
         elif base in modifiers:
             mod = modifiers[base]
             acc = int(acc, 16)
@@ -498,7 +496,7 @@ class Decompose_to_tex(object):
             output.append( mod % n )
             return
         elif base.startswith('<'):
-            syslogger('%r:%d:%d unsupported modifier %r\n' % (input_file, line_count, char_count,base))
+            syslogger('%r:%d:%d unsupported modifier %r\n' % (self.input_file, self.line_count, self.char_count,base))
             #acc = int(acc, 16)
             #decompose_to_tex(chr(acc), output)
             #n = output.pop()
@@ -517,7 +515,7 @@ class Decompose_to_tex(object):
                 output.append( "\\%s{%s}" %(accents_unicode2latex[acc], n) )
                 return
         except ValueError:
-            syslogger('%r:%d:%d unsupported decomposition %r\n' % (input_file, line_count, char_count,dec))
+            syslogger('%r:%d:%d unsupported decomposition %r\n' % (self.input_file, self.line_count, self.char_count,dec))
     #
     if name.startswith('GREEK'):
         char = name.split()[-1].lower()
@@ -530,11 +528,11 @@ class Decompose_to_tex(object):
     #
     if code in math_unicode2latex and code > 0x7f:
         latex = math_unicode2latex[code][0]
-        if verbose: syslogger('%r:%d:%d math %r %x %s\n' % (input_file, line_count, char_count,char,code,latex))
+        if verbose: syslogger('%r:%d:%d math %r %x %s\n' % (self.input_file, self.line_count, self.char_count,char,code,latex))
         output.append(latex+' ')
         return
     if code > 127:
-        syslogger('%r:%d:%d could not convert %r %x to ascii\n' % (input_file, line_count, char_count,char,code))
+        syslogger('%r:%d:%d could not convert %r %x to ascii\n' % (self.input_file, self.line_count, self.char_count,char,code))
     output.append(char)
         
 def uni2tex(text, extra = None, **k):
@@ -576,9 +574,6 @@ def main(argv=sys.argv):
     is_latex2unicode = (exe_name == 'latex2unicode')
     #
     global verbose
-    global line_count
-    global char_count
-    global input_file
     parser = argparse.ArgumentParser(prog=exe_name, 
                                      description= 'convert LaTeX to Unicode' if is_latex2unicode else \
                                         'convert Unicode to LaTeX',
@@ -638,26 +633,31 @@ def main(argv=sys.argv):
         tex2uni(inp, out, D)
         return (0)
     #
-    decompose_to_tex =  Decompose_to_tex(add_font_modifiers=(not args.no_fonts), convert_accents=(not args.no_accents),
-                                         prefer_unicode_math = args.prefer_unicode_math)
     if args.input or args.stdin:
         out=sys.stdout
         if args.output:
             out = open(args.output, 'w')
         if args.text:
             logger.warning('Cmdline %r ignored', args.text)
+
+        input_file_name = 'stdin' if args.stdin else args.input
+        decompose_to_tex =  Decompose_to_tex(add_font_modifiers=(not args.no_fonts),
+                                             convert_accents=(not args.no_accents),
+                                             prefer_unicode_math = args.prefer_unicode_math,
+                                             input_file=input_file_name)
         if args.stdin:
-            input_file = 'stdin'
             I = sys.stdin
         else:
-            input_file = args.input
             I =  open(args.input)
         for L in I:
                 decompose_to_tex.parse(L)
                 out.write(decompose_to_tex.result)
-                char_count = 0
-                line_count += 1
+                decompose_to_tex.char_count = 0
+                decompose_to_tex.line_count += 1
         return (0)
+    #
+    decompose_to_tex =  Decompose_to_tex(add_font_modifiers=(not args.no_fonts), convert_accents=(not args.no_accents),
+                                         prefer_unicode_math = args.prefer_unicode_math)
     #
     for  t in args.text:
         if not isinstance(t,str):
