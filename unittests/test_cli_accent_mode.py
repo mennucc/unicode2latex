@@ -18,14 +18,17 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from unicode2latex import u2l
 
+maincli = 'unicode2latex/u2l.py'
 
 class TestCLIAccentModeArgument(unittest.TestCase):
     """Test the --accent-mode command-line argument."""
 
+    
+
     def test_help_shows_accent_mode_option(self):
         """Test that --help shows the --accent-mode option."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--help'],
+            [sys.executable, maincli, '--help'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -38,7 +41,7 @@ class TestCLIAccentModeArgument(unittest.TestCase):
     def test_accent_mode_default_text(self):
         """Test that default accent mode is 'text'."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', 'é'],
+            [sys.executable, maincli, 'é'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -50,7 +53,7 @@ class TestCLIAccentModeArgument(unittest.TestCase):
     def test_accent_mode_text_explicit(self):
         """Test --accent-mode=text explicitly."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--accent-mode=text', 'é'],
+            [sys.executable, maincli, '--accent-mode=text', 'é'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -62,7 +65,7 @@ class TestCLIAccentModeArgument(unittest.TestCase):
     def test_accent_mode_math(self):
         """Test --accent-mode=math."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--accent-mode=math', 'é'],
+            [sys.executable, maincli, '--accent-mode=math', 'é'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -74,7 +77,7 @@ class TestCLIAccentModeArgument(unittest.TestCase):
     def test_accent_mode_auto(self):
         """Test --accent-mode=auto (currently defaults to text)."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--accent-mode=auto', 'é'],
+            [sys.executable, maincli, '--accent-mode=auto', 'é'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -86,7 +89,7 @@ class TestCLIAccentModeArgument(unittest.TestCase):
     def test_invalid_accent_mode_rejected(self):
         """Test that invalid accent mode is rejected."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--accent-mode=invalid', 'é'],
+            [sys.executable, maincli, '--accent-mode=invalid', 'é'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -101,7 +104,7 @@ class TestCLIAccentModeWithMultipleAccents(unittest.TestCase):
     def test_multiple_accents_text_mode(self):
         """Test multiple accents in text mode."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', 'é è ê ñ ü'],
+            [sys.executable, maincli, 'é è ê ñ ü'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -123,7 +126,7 @@ class TestCLIAccentModeWithMultipleAccents(unittest.TestCase):
     def test_multiple_accents_math_mode(self):
         """Test multiple accents in math mode."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--accent-mode=math', 'é è ê ñ ü'],
+            [sys.executable, maincli, '--accent-mode=math', 'é è ê ñ ü'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -154,7 +157,7 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
 
         try:
             result = subprocess.run(
-                [sys.executable, 'u2l.py', '--input', temp_file],
+                [sys.executable, maincli, '--input', temp_file],
                 capture_output=True,
                 text=True,
                 cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -173,7 +176,7 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
 
         try:
             result = subprocess.run(
-                [sys.executable, 'u2l.py', '--accent-mode=math', '--input', temp_file],
+                [sys.executable, maincli, '--accent-mode=math', '--input', temp_file],
                 capture_output=True,
                 text=True,
                 cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -187,7 +190,7 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
     def test_stdin_input_text_mode(self):
         """Test stdin input with text mode."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--stdin'],
+            [sys.executable, maincli, '--stdin'],
             input='é',
             capture_output=True,
             text=True,
@@ -200,7 +203,7 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
     def test_stdin_input_math_mode(self):
         """Test stdin input with math mode."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--accent-mode=math', '--stdin'],
+            [sys.executable, maincli, '--accent-mode=math', '--stdin'],
             input='é',
             capture_output=True,
             text=True,
@@ -217,7 +220,7 @@ class TestCLIAccentModeWithOtherOptions(unittest.TestCase):
     def test_accent_mode_with_no_accents(self):
         """Test that --no-accents disables accent conversion even with accent-mode."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--accent-mode=math', '--no-accents', 'é'],
+            [sys.executable, maincli, '--accent-mode=math', '--no-accents', 'é'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -229,7 +232,7 @@ class TestCLIAccentModeWithOtherOptions(unittest.TestCase):
     def test_accent_mode_with_no_fonts(self):
         """Test accent mode with --no-fonts."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--accent-mode=math', '--no-fonts', 'é ⅅ'],
+            [sys.executable, maincli, '--accent-mode=math', '--no-fonts', 'é ⅅ'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -244,7 +247,7 @@ class TestCLIAccentModeWithOtherOptions(unittest.TestCase):
     def test_accent_mode_with_prefer_unicode_math(self):
         """Test accent mode with --prefer-unicode-math."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--accent-mode=math', '--prefer-unicode-math', 'é'],
+            [sys.executable, maincli, '--accent-mode=math', '--prefer-unicode-math', 'é'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -259,7 +262,7 @@ class TestCLIAccentModeEdgeCases(unittest.TestCase):
     def test_empty_input_text_mode(self):
         """Test empty input with text mode."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', ''],
+            [sys.executable, maincli, ''],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -270,7 +273,7 @@ class TestCLIAccentModeEdgeCases(unittest.TestCase):
     def test_empty_input_math_mode(self):
         """Test empty input with math mode."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--accent-mode=math', ''],
+            [sys.executable, maincli, '--accent-mode=math', ''],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -281,7 +284,7 @@ class TestCLIAccentModeEdgeCases(unittest.TestCase):
     def test_no_accents_in_input(self):
         """Test input without accents in math mode."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--accent-mode=math', 'hello world'],
+            [sys.executable, maincli, '--accent-mode=math', 'hello world'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -292,7 +295,7 @@ class TestCLIAccentModeEdgeCases(unittest.TestCase):
     def test_mixed_unicode_text_mode(self):
         """Test mixed unicode (accents + greek) with text mode."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', 'é α è'],
+            [sys.executable, maincli, 'é α è'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -306,7 +309,7 @@ class TestCLIAccentModeEdgeCases(unittest.TestCase):
     def test_mixed_unicode_math_mode(self):
         """Test mixed unicode (accents + greek) with math mode."""
         result = subprocess.run(
-            [sys.executable, 'u2l.py', '--accent-mode=math', 'é α è'],
+            [sys.executable, maincli, '--accent-mode=math', 'é α è'],
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
