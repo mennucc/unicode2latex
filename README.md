@@ -466,21 +466,43 @@ unicode2latex/
 
 ## Testing
 
-The project includes a comprehensive test suite with 285 tests:
+The project includes a comprehensive test suite with 285 tests.
+
+### Quick Start
 
 ```bash
-# Run all tests
-python3 -m unittest discover unittests
-
-# Run specific test file
-python3 -m unittest unittests/test_unicode2latex.py
-
-# Run with verbose output
+# Run all tests with current Python version
 python3 -m unittest discover unittests -v
 
-# Run specific test
-python3 -m unittest unittests.test_accents.TestAccentConversion.test_acute_accent
+# Run tests across multiple Python versions with tox
+tox
+
+# Run tests in parallel (faster)
+tox -p auto
 ```
+
+### Testing with Tox
+
+Test across Python 3.8-3.13:
+
+```bash
+# Install tox
+pip install tox
+
+# Run all environments
+tox
+
+# Run specific Python version
+tox -e py310
+
+# Run with coverage
+tox -e coverage
+
+# Run linting
+tox -e lint
+```
+
+See [TESTING.md](TESTING.md) for complete testing documentation.
 
 **Test coverage by category:**
 - Unicode → LaTeX: 88 tests
