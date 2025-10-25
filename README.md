@@ -445,8 +445,9 @@ pip install -e .
 
 ```
 unicode2latex/
-├── u2l.py                      # Main module
-├── FakePlasTeX/                # Tokenizer for LaTeX parsing
+├── unicode2latex/              # code
+│   ├── u2l.py                  # Main module
+│   ├── FakePlasTeX/            # Tokenizer for LaTeX parsing
 ├── unittests/                  # Test suite (285 tests)
 │   ├── test_unicode2latex.py   # Unicode → LaTeX tests
 │   ├── test_latex2unicode.py   # LaTeX → Unicode tests
