@@ -88,6 +88,27 @@ accents_latex2unicode = {
     k:v for (v,k) in accents_unicode2latex.items()
 }
 
+## Mapping from text-mode accent symbols to math-mode accent commands
+## Text mode: \'{e} → Math mode: \acute{e}
+accents_textmode_to_mathmode = {
+    '`': 'grave',      # grave accent
+    "'": 'acute',      # acute accent
+    '^': 'hat',        # circumflex
+    '~': 'tilde',      # tilde
+    '"': 'ddot',       # umlaut/diaeresis
+    '=': 'bar',        # macron
+    '.': 'dot',        # dot above
+    'u': 'breve',      # breve
+    'v': 'check',      # caron/check
+    # Note: some accents don't have direct math equivalents:
+    # 'H': double acute (no standard math command)
+    # 'c': cedilla (no standard math command)
+    # 'k': ogonek (no standard math command)
+    # 'b': bar below (no standard math command)
+    # 'd': dot below (no standard math command)
+    # 'r': ring above (no standard math command)
+}
+
 ## these unicodes exists in unicode-math-table.tex but they do not work in practice
 
 math_unicode_skip = [
@@ -366,7 +387,7 @@ modifiers = {
 
 
 class Decompose_to_tex(object):
-  def __init__(self, add_font_modifiers=True, convert_accents = True, prefer_unicode_math = global_prefer_unicode_math, input_file='cmdline'):
+  def __init__(self, add_font_modifiers=True, convert_accents = True, prefer_unicode_math = global_prefer_unicode_math, input_file='cmdline', accent_mode='text'):
       self.output = []
       self.add_font_modifiers = add_font_modifiers
       self.convert_accents = convert_accents
@@ -377,6 +398,13 @@ class Decompose_to_tex(object):
       self.line_count = 1
       self.char_count = 0
       self.input_file = input_file
+      # Accent mode: 'text', 'math', or 'auto'
+      # 'text': always use text-mode accents like \'{e}
+      # 'math': always use math-mode accents like \acute{e}
+      # 'auto': try to detect context (not yet implemented, defaults to 'text')
+      if accent_mode not in ('text', 'math', 'auto'):
+          raise ValueError(f"accent_mode must be 'text', 'math', or 'auto', got {accent_mode!r}")
+      self.accent_mode = accent_mode
   #
   def update_extra(self, D):
       self.extra_unicode2latex.update(D)
@@ -436,8 +464,25 @@ class Decompose_to_tex(object):
         except IndexError:
             syslogger('%r: accents with no preceding character %r\n' % (self.input_file, char))
             n=' '
-        # FIXME should know if in math mode or not
-        output.append( "\\%s{%s}" %(accents_unicode2latex[code], n) )
+
+        # Generate accent based on accent_mode
+        accent_symbol = accents_unicode2latex[code]
+
+        if self.accent_mode == 'math':
+            # Use math-mode accent if available
+            if accent_symbol in accents_textmode_to_mathmode:
+                math_accent = accents_textmode_to_mathmode[accent_symbol]
+                output.append( "\\%s{%s}" % (math_accent, n) )
+            else:
+                # Fallback to text mode for accents without math equivalent
+                output.append( "\\%s{%s}" % (accent_symbol, n) )
+        elif self.accent_mode == 'auto':
+            # TODO: Implement auto-detection of math vs text mode
+            # For now, default to text mode
+            output.append( "\\%s{%s}" % (accent_symbol, n) )
+        else:  # self.accent_mode == 'text'
+            # Text-mode accent (default)
+            output.append( "\\%s{%s}" % (accent_symbol, n) )
         return
     
     if dec:
@@ -512,7 +557,14 @@ class Decompose_to_tex(object):
                     return
                 decompose_to_tex(chr(base), output)
                 n = output.pop()
-                output.append( "\\%s{%s}" %(accents_unicode2latex[acc], n) )
+
+                # Use accent_mode for decomposed accents too
+                accent_symbol = accents_unicode2latex[acc]
+                if self.accent_mode == 'math' and accent_symbol in accents_textmode_to_mathmode:
+                    math_accent = accents_textmode_to_mathmode[accent_symbol]
+                    output.append( "\\%s{%s}" % (math_accent, n) )
+                else:
+                    output.append( "\\%s{%s}" % (accent_symbol, n) )
                 return
         except ValueError:
             syslogger('%r:%d:%d unsupported decomposition %r\n' % (self.input_file, self.line_count, self.char_count,dec))
