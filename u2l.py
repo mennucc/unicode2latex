@@ -575,6 +575,9 @@ def main(argv=sys.argv):
     is_latex2unicode = (exe_name == 'latex2unicode')
     #
     global verbose
+    global line_count
+    global char_count
+    global input_file
     parser = argparse.ArgumentParser(prog=exe_name, 
                                      description= 'convert LaTeX to Unicode' if is_latex2unicode else \
                                         'convert Unicode to LaTeX',
