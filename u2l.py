@@ -62,6 +62,7 @@ try:
     for j in 'unicode-math-table.tex' , 'unicode-math-xetex.sty':
         p = subprocess.Popen(['kpsewhich', j], stdout=subprocess.PIPE)
         a = p.stdout.read().strip()
+        a = a.decode('utf-8', errors='surrogateescape')
         p.wait()
         if not os.path.isfile(a):
             logger.warning('kpsewhich : cannot locate %r', j)
