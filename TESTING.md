@@ -164,7 +164,7 @@ Tests are located in the `unittests/` directory. To add new tests:
    import sys
    import os
    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-   import u2l
+   from unicode2latex import u2l
    ```
 3. Create test classes inheriting from `unittest.TestCase`
 4. Write test methods starting with `test_`

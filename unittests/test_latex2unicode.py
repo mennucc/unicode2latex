@@ -8,10 +8,10 @@ import sys
 import os
 import io
 
-# Add parent directory to path to import u2l
+# Add parent directory to path to from unicode2latex import u2l
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import u2l
+from unicode2latex import u2l
 
 
 class TestLatex2UnicodeMath(unittest.TestCase):
