@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -e
+
+if git diff --cached | egrep -2 '^(old.mode|new.mode)' ; then
+ echo 'Please do not change mode of files'
+ exit 1
+fi
+
+
+########## flake, pylint
+
+t=`mktemp -d`
+
+test -d $t
+
+#trap "rm -fr \"$\"t" EXIT ERR HUP INT QUIT TERM
+
+git archive HEAD | ( cd $t ; tar xf - )
+
+
+git diff --cached | ( cd $t ; patch -p1 )
+
+pushd $t
+
+flake8 .  --select=E9,F63,F7,F82
+
+for s in unittests/*py ; do
+    if test -x "$s" ; then
+	$s -v
+    fi
+done
+
+# I hate pytest
+
+echo You should: rm -fr "$t"
+
+popd

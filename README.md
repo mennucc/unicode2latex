@@ -63,6 +63,15 @@ for example Ù becomes `\~u` but in math-mode it should be  `\tilde u`
 Similarly the conversion of greek letters should be differentiated
  inside and outside mathematical environments.
 
+Developing
+==========
+
+If you wish to help in developing, please
+
+    pip -r requirements-test.txt
+    git config --local core.hooksPath .githooks/
+
+so that each commit is pre tested.
 
 Acknowledgements
 ================
