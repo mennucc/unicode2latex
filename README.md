@@ -2,8 +2,9 @@
 
 Convert Unicode text to LaTeX and vice versa.
 
-[![Python Version](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/tests-285%20passing-brightgreen.svg)](unittests/)
+[![License](https://img.shields.io/badge/license-BSD-blue.svg)](LICENSE.txt)
 
 ## Table of Contents
 
