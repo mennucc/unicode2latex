@@ -569,11 +569,14 @@ def tex2uni(inp, out, D):
 
 #########
 
-if __name__ == '__main__':
-    exe_name = os.path.basename(sys.argv[0])
+
+def main(argv=sys.argv):
+    exe_name = os.path.basename(argv[0])
     is_latex2unicode = (exe_name == 'latex2unicode')
     #
-    parser = argparse.ArgumentParser(description= 'convert LaTeX to Unicode' if is_latex2unicode else \
+    global verbose
+    parser = argparse.ArgumentParser(prog=exe_name, 
+                                     description= 'convert LaTeX to Unicode' if is_latex2unicode else \
                                         'convert Unicode to LaTeX',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      epilog = doc_latex2unicode if is_latex2unicode else doc_unicode2latex)
@@ -602,11 +605,11 @@ if __name__ == '__main__':
         parser.add_argument('--no-accents',action='store_true',
                             help='do not convert accents')
     #
-    args = parser.parse_args()
+    args = parser.parse_args(argv[1:])
     #
     if 1 != bool(args.text) + bool(args.input) + bool(args.stdin):
         parser.print_help()
-        sys.exit(1)
+        return (1)
     #
     verbose = args.verbose
     #
@@ -629,7 +632,7 @@ if __name__ == '__main__':
         if args.greek:
             D.update( { k:chr(v) for k,v in greek_latex2unicode.items() }  )
         tex2uni(inp, out, D)
-        sys.exit(0)
+        return (0)
     #
     decompose_to_tex =  Decompose_to_tex(add_font_modifiers=(not args.no_fonts), convert_accents=(not args.no_accents),
                                          prefer_unicode_math = args.prefer_unicode_math)
@@ -650,11 +653,14 @@ if __name__ == '__main__':
                 out.write(decompose_to_tex.result)
                 char_count = 0
                 line_count += 1
-        sys.exit(0)
+        return (0)
     #
     for  t in args.text:
         if not isinstance(t,str):
             t = str(t, "utf-8")
         decompose_to_tex.parse(t)
         print(decompose_to_tex.result)
-    sys.exit(0)
+    return (0)
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
