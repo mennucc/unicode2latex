@@ -53,15 +53,41 @@ With the --greek arguments,
 With the --math arguments,
   it will convert math symbols, e.g.  \\cap → ∩ .
 
-Issues
-------
+Accent Mode Options
+-------------------
 
-Currently accents are always converted using the non-math representation,
-for example Ù becomes `\~u` but in math-mode it should be  `\tilde u`
+The `--accent-mode` option controls how accents are converted:
 
+- **`--accent-mode=text`** (default): Uses text-mode accents
+  - Example: `é` → `\'{e}`
+  - Example: `ñ` → `\~{n}`
 
-Similarly the conversion of greek letters should be differentiated
- inside and outside mathematical environments.
+- **`--accent-mode=math`**: Uses math-mode accents
+  - Example: `é` → `\acute{e}`
+  - Example: `ñ` → `\tilde{n}`
+
+- **`--accent-mode=auto`**: Auto-detection (planned feature, currently defaults to text)
+
+Usage examples:
+```bash
+# Default text mode
+unicode2latex "café"
+# Output: caf\'{e}
+
+# Math mode
+unicode2latex --accent-mode=math "café"
+# Output: caf\acute{e}
+
+# Multiple accents
+unicode2latex --accent-mode=math "é è ê ñ ü"
+# Output: \acute{e} \grave{e} \hat{e} \tilde{n} \ddot{u}
+```
+
+Known Limitations
+-----------------
+
+The conversion of greek letters is not currently differentiated
+inside and outside mathematical environments.
 
 Developing
 ==========

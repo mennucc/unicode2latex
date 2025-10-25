@@ -655,6 +655,9 @@ def main(argv=sys.argv):
                             help='do not add font modifiers')
         parser.add_argument('--no-accents',action='store_true',
                             help='do not convert accents')
+        parser.add_argument('--accent-mode', choices=['text', 'math', 'auto'],
+                            default='text',
+                            help="accent output mode: 'text' for \\'{e}, 'math' for \\acute{e}, 'auto' for auto-detect (default: text)")
     #
     args = parser.parse_args(argv[1:])
     #
@@ -696,7 +699,8 @@ def main(argv=sys.argv):
         decompose_to_tex =  Decompose_to_tex(add_font_modifiers=(not args.no_fonts),
                                              convert_accents=(not args.no_accents),
                                              prefer_unicode_math = args.prefer_unicode_math,
-                                             input_file=input_file_name)
+                                             input_file=input_file_name,
+                                             accent_mode=args.accent_mode)
         if args.stdin:
             I = sys.stdin
         else:
@@ -708,8 +712,10 @@ def main(argv=sys.argv):
                 decompose_to_tex.line_count += 1
         return (0)
     #
-    decompose_to_tex =  Decompose_to_tex(add_font_modifiers=(not args.no_fonts), convert_accents=(not args.no_accents),
-                                         prefer_unicode_math = args.prefer_unicode_math)
+    decompose_to_tex =  Decompose_to_tex(add_font_modifiers=(not args.no_fonts),
+                                         convert_accents=(not args.no_accents),
+                                         prefer_unicode_math = args.prefer_unicode_math,
+                                         accent_mode=args.accent_mode)
     #
     for  t in args.text:
         if not isinstance(t,str):
