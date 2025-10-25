@@ -9,7 +9,7 @@ try:
     from plasTeX.Tokenizer import *
 except ImportError:
     logger.info('Using FakePlasTeX')
-    from FakePlasTeX.FakeTokenizer import *
+    from .FakeTokenizer import *
 
 
 ###############################################

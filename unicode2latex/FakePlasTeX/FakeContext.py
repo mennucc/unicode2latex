@@ -1,5 +1,5 @@
 
-from FakePlasTeX.FakeTokenizer import Token, DEFAULT_CATEGORIES
+from .FakeTokenizer import Token, DEFAULT_CATEGORIES
 
 
 class FakeContext(object):

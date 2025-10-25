@@ -35,8 +35,9 @@ dependencies = []
 "Bug Tracker" = "https://github.com/mennucc/unicode2latex/issues"
 
 [project.scripts]
-unicode2latex = "u2l:main"
-latex2unicode = "u2l:main"
+unicode2latex = "unicode2latex.u2l:main"
+latex2unicode = "unicode2latex.u2l:main"
 
-[tool.setuptools]
-py-modules = ["u2l"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["unicode2latex*"]

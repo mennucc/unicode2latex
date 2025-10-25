@@ -597,7 +597,7 @@ def uni2tex(text, extra = None, **k):
 #### FakePlasTeX was extracted and simplified from the plasTeX project
 
 def tex2uni(inp, out, D):
-    from FakePlasTeX import FakeContext, TokenizerPassThru 
+    from .FakePlasTeX import FakeContext, TokenizerPassThru 
     t = TokenizerPassThru.TokenizerPassThru(inp, FakeContext.FakeContext())
     t = iter(t)
     for tok in t:
