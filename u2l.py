@@ -543,6 +543,8 @@ def uni2tex(text, extra = None, **k):
     decompose_to_tex.parse(text)
     return decompose_to_tex.result
 
+#### FakePlasTeX was extracted and simplified from the plasTeX project
+
 def tex2uni(inp, out, D):
     from FakePlasTeX import FakeContext, TokenizerPassThru 
     t = TokenizerPassThru.TokenizerPassThru(inp, FakeContext.FakeContext())
@@ -564,7 +566,7 @@ def tex2uni(inp, out, D):
             out.write(str(tok))
 
 
-########## extracted and simplified from the plasTeX project
+
 #########
 
 if __name__ == '__main__':
