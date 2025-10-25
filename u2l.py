@@ -435,7 +435,7 @@ class Decompose_to_tex(object):
         try:
             n = output.pop()
         except IndexError:
-            syslogger('%r:%d accents with no preceding character\n' % (input_file, char))
+            syslogger('%r: accents with no preceding character %r\n' % (input_file, char))
             n=' '
         # FIXME should know if in math mode or not
         output.append( "\\%s{%s}" %(accents_unicode2latex[code], n) )
