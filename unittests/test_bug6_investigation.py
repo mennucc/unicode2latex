@@ -15,7 +15,8 @@ import io
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from unicode2latex import u2l
-from FakePlasTeX import TokenizerPassThru, FakeContext
+from unicode2latex.FakePlasTeX import TokenizerPassThru, FakeContext
+from unicode2latex.FakePlasTeX.FakeTokenizer import Token, Text,  EscapeSequence
 
 
 class TestBug6TokenizerInvestigation(unittest.TestCase):
@@ -149,8 +150,7 @@ class TestBug6TokenizerInvestigation(unittest.TestCase):
 
         # This test documents that the code is correct by verifying
         # that Token objects support string operations
-        from FakePlasTeX.FakeTokenizer import Token
-
+        
         # Create a token that looks like an active character
         tok = Token("active::$")
 
@@ -171,7 +171,7 @@ class TestTokenInheritance(unittest.TestCase):
 
     def test_token_inherits_from_string(self):
         """Test that Token class hierarchy supports string operations."""
-        from FakePlasTeX.FakeTokenizer import Token, Text
+        
 
         # Text inherits from str
         self.assertTrue(issubclass(Text, str),
@@ -187,7 +187,6 @@ class TestTokenInheritance(unittest.TestCase):
 
     def test_escape_sequence_inherits_from_token(self):
         """Test that EscapeSequence inherits from Token."""
-        from FakePlasTeX.FakeTokenizer import Token, EscapeSequence
 
         self.assertTrue(issubclass(EscapeSequence, Token),
             "EscapeSequence should inherit from Token")
@@ -198,7 +197,6 @@ class TestTokenInheritance(unittest.TestCase):
 
     def test_string_operations_on_token(self):
         """Test that string operations work on Token objects."""
-        from FakePlasTeX.FakeTokenizer import Token
 
         # Create a token (it's a string)
         tok = Token("test::value")
