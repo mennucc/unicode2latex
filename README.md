@@ -80,3 +80,6 @@ The principal author has used the Python code editor
 [`wing8` by Wingware](http://wingware.com/)
 to develop this project, with a license kindly donated
 by WingWare.
+
+[Claude Code](https://claude.ai/claude-code) by [Anthropic](https://www.anthropic.com/)
+was used to debug and enhance this package.
