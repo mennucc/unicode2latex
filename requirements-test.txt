@@ -1,0 +1,21 @@
+# Testing dependencies for plain-config
+# Used by .githooks/pre-commit and tox
+
+# Multi-version testing
+tox>=4.0
+
+# Linting (required by pre-commit hook)
+flake8>=3.9
+
+# Optional: More comprehensive linting
+# flake8-bugbear>=21.0  # Additional bug checks
+# flake8-comprehensions>=3.0  # Better comprehension checks
+
+# Optional: Code coverage
+# coverage>=5.0
+
+# Optional: Code formatting
+# black>=22.0
+
+# Optional: Type checking
+# mypy>=1.0
