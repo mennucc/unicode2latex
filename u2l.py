@@ -389,7 +389,7 @@ class Decompose_to_tex(object):
   #
   def char(self, text):
       assert isinstance(text,str) and len(text) == 1
-      return self._docode(ord(text))
+      return self._docode(text)
   #
   def parse(self, text):
       self.iterator = iter(text)
