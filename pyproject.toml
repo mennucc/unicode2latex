@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "unicode2latex"
+version = "0.2"
+authors = [
+  { name="Andrea C. G. Mennucci", email="mennucc1@debian.org" },
+]
+description = "convert unicode to LaTeX and vice-versa"
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.urls]
+"Homepage" = "https://github.com/mennucc/unicode2latex"
+"Bug Tracker" = "https://github.com/mennucc/unicode2latex/issues"
+
+[project.scripts]
+unicode2latex = "u2l:main"
+latex2unicode = "u2l:main"
+
+[tool.setuptools]
+py-modules = ["u2l"]
