@@ -25,9 +25,9 @@ pushd $t
 
 flake8 .  --select=E9,F63,F7,F82
 
-for s in unittests/*py ; do
-    if test -x "$s" ; then
-	$s -v
+for s in unittests/*.py ; do
+    if test -f "$s" ; then
+	python3 "$s"
     fi
 done
 
