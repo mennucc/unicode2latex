@@ -97,29 +97,29 @@ class TestTex2UnicodeBugs(unittest.TestCase):
 
     def test_unknown_latex_command(self):
         """Test handling of unknown LaTeX commands."""
-        inp = io.StringIO(r"\unknowncommand test")
-        out = io.StringIO()
-        u2l.tex2uni(inp, out, {})
-        result = out.getvalue()
+        with io.StringIO(r"\unknowncommand test") as inp:
+            with io.StringIO() as out:
+                u2l.tex2uni(inp, out, {})
+                result = out.getvalue()
 
         # Should pass through unknown commands
         self.assertIn("unknowncommand", result)
 
     def test_empty_dictionary(self):
         """Test tex2uni with empty conversion dictionary."""
-        inp = io.StringIO(r"plain text")
-        out = io.StringIO()
-        u2l.tex2uni(inp, out, {})
-        result = out.getvalue()
+        with io.StringIO(r"plain text") as inp:
+            with io.StringIO() as out:
+                u2l.tex2uni(inp, out, {})
+                result = out.getvalue()
 
         self.assertEqual(result, "plain text")
 
     def test_comment_handling(self):
         """Test that LaTeX comments are handled."""
-        inp = io.StringIO(r"text % comment")
-        out = io.StringIO()
-        u2l.tex2uni(inp, out, {})
-        result = out.getvalue()
+        with io.StringIO(r"text % comment") as inp:
+            with io.StringIO() as out:
+                u2l.tex2uni(inp, out, {})
+                result = out.getvalue()
 
         self.assertIn("text", result)
         self.assertIn("%", result)
@@ -129,14 +129,15 @@ class TestTex2UnicodeBugs(unittest.TestCase):
         # Line 560 uses 'in' operator on tok which might not support it
         inp = io.StringIO(r"\alpha")
         out = io.StringIO()
-
-        try:
-            u2l.tex2uni(inp, out, {r'\alpha': 'α'})
-            result = out.getvalue()
-            self.assertIn("α", result)
-        except TypeError as e:
-            # This would catch the bug if '::' in tok fails
-            self.fail(f"Tokenizer 'in' operator bug: {e}")
+        with io.StringIO(r"\alpha") as inp:
+            with io.StringIO() as out:
+                try:
+                    u2l.tex2uni(inp, out, {r'\alpha': 'α'})
+                    result = out.getvalue()
+                    self.assertIn("α", result)
+                except TypeError as e:
+                    # This would catch the bug if '::' in tok fails
+                    self.fail(f"Tokenizer 'in' operator bug: {e}")
 
 
 class TestGlobalVariableBugs(unittest.TestCase):
