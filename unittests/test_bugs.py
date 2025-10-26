@@ -28,6 +28,7 @@ class TestSubprocessBugs(unittest.TestCase):
             p = subprocess.Popen(['echo', 'test'], stdout=subprocess.PIPE)
             a = p.stdout.read().strip()
             p.wait()
+            p.stdout.close()
 
             # Check if bytes are returned (which is the actual behavior)
             self.assertIsInstance(a, bytes,
