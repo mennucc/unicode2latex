@@ -39,7 +39,7 @@ It does not (yet) convert accents or fonts.
 
 
 import os, sys, copy, io, argparse, unicodedata, collections, subprocess, logging, re
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('unicode2latex')
 
 if __name__ == '__main__':
     syslogger = sys.stderr.write

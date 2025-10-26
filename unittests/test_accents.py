@@ -6,6 +6,8 @@ Unit tests for accent handling in unicode2latex.
 import unittest
 import sys
 import os
+import logging
+logger = logging.getLogger('unicode2latex')
 
 # Add parent directory to path to from unicode2latex import u2l
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
