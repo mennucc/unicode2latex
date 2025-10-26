@@ -19,3 +19,7 @@ flake8>=3.9
 
 # Optional: Type checking
 # mypy>=1.0
+
+# to build the package for pip
+build
+twine
