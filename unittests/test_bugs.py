@@ -165,7 +165,7 @@ class TestGlobalVariableBugs(unittest.TestCase):
         result = u2l.uni2tex("α")
         self.assertIn("\\alpha", result)
 
-
+@unittest.skipIf(sys.version_info < (3, 10), "Requires Python 3.10 or higher")
 class TestVerboseMode(unittest.TestCase):
     """Test verbose mode functionality."""
 
