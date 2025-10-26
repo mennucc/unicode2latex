@@ -178,25 +178,34 @@ class TestVerboseMode(unittest.TestCase):
     def test_verbose_level_0(self):
         """Test with verbose=0 (default)."""
         u2l.verbose = 0
+        with self.assertNoLogs(logger) as cm:
+            result = u2l.uni2tex("α")
         result = u2l.uni2tex("α")
         self.assertIn("\\alpha", result)
 
     def test_verbose_level_1(self):
         """Test with verbose=1."""
         u2l.verbose = 1
-        result = u2l.uni2tex("α")
+        with self.assertNoLogs(logger) as cm:
+            result = u2l.uni2tex("α")
         self.assertIn("\\alpha", result)
 
     def test_verbose_level_2(self):
         """Test with verbose=2."""
         u2l.verbose = 2
-        result = u2l.uni2tex("α")
+        with self.assertLogs(logger) as cm:
+            result = u2l.uni2tex("α")
+        self.assertTrue(len(cm.output))
+        self.assertIn('decomposing', cm.output[0])
         self.assertIn("\\alpha", result)
 
     def test_verbose_level_3(self):
         """Test with verbose=3."""
         u2l.verbose = 3
-        result = u2l.uni2tex("α")
+        with self.assertLogs(logger) as cm:
+            result = u2l.uni2tex("α")
+        self.assertTrue(len(cm.output))
+        self.assertIn('decomposing', cm.output[0])
         self.assertIn("\\alpha", result)
 
 
@@ -226,7 +235,10 @@ class TestDecompositionEdgeCases(unittest.TestCase):
         """Test unsupported <compat> decomposition."""
         # Line 491: syslogger for unsupported <compat>
         # Should not crash, just log warning
-        result = u2l.uni2tex("㎏")  # SQUARE KG (compat decomposition)
+        with self.assertLogs(logger) as cm:
+            result = u2l.uni2tex("㎏")  # SQUARE KG (compat decomposition)
+        self.assertTrue(len(cm.output))
+        self.assertIn("unsupported modifier '<square>'", cm.output[0])
         self.assertIsInstance(result, str)
 
     def test_unsupported_modifier(self):
@@ -251,8 +263,11 @@ class TestDecompositionEdgeCases(unittest.TestCase):
     def test_high_unicode_not_convertible(self):
         """Test high unicode characters that can't be converted."""
         # Line 536: syslogger for characters > 127 that can't convert
-        result = u2l.uni2tex("😀")  # Emoji
+        with self.assertLogs(logger) as cm:
+            result = u2l.uni2tex("😀")  # Emoji
         # Should not crash, just warn
+        self.assertTrue(len(cm.output))
+        self.assertIn('could not convert', cm.output[0])
         self.assertIn("😀", result)
 
 

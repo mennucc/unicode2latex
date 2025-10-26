@@ -332,7 +332,11 @@ class TestAccentEdgeCases(unittest.TestCase):
         """Test combining accent without base character."""
         # This should not crash, but may produce a warning
         combining_grave = "\u0300"
-        result = u2l.uni2tex(combining_grave)
+        with self.assertLogs(logger) as cm:
+            result = u2l.uni2tex(combining_grave)
+        
+        self.assertTrue(len(cm.output))
+        self.assertIn('accents with no preceding character', cm.output[0])
         # Should handle gracefully (may add space as base)
         self.assertIsInstance(result, str)
 
