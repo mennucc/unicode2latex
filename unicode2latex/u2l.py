@@ -161,7 +161,8 @@ mathaccents_latex2unicode = {}
 ## https://ctan.math.washington.edu/tex-archive/fonts/kpfonts-otf/doc/unimath-kpfonts.pdf
 
 if unicode_math_table_file and os.path.isfile(unicode_math_table_file):
-    for s in open(unicode_math_table_file):
+  with  open(unicode_math_table_file) as F:
+    for s in F:
         if s.startswith('\\UnicodeMathSymbol'):
             s = s.split('{')
             code=int(s[1].lstrip('"').rstrip('}').rstrip(' '),16)
@@ -206,7 +207,8 @@ if unicode_math_table_file and os.path.isfile(unicode_math_table_file):
 S = re.compile(r'\\def\s*{(\\[a-zA-Z]*)\s*}\s*{\s*(\\[a-zA-Z]*)\s*}')
 R = re.compile(r'\\def\s*(\\[a-zA-Z]*)\s*{\s*(\\[a-zA-Z]*)\s*}')
 if unicode_math_xetex_file is not None:
-    for n,l in enumerate(open(unicode_math_xetex_file)):
+  with open(unicode_math_xetex_file) as F:
+    for n,l in enumerate(F):
         for a, b in S.findall(l) + R.findall(l):
             codes = math_latex2unicode.get(b)
             if codes is None:
