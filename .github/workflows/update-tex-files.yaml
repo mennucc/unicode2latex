@@ -1,0 +1,73 @@
+# Workflow to update backup TeX files from system
+# Can be run manually or on a schedule
+
+name: Update TeX Files
+
+on:
+  workflow_dispatch:  # Allow manual trigger
+  schedule:
+    # Run monthly on the 1st at 00:00 UTC (optional)
+    - cron: '0 0 1 * *'
+
+jobs:
+  update-tex-files:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Install TeX Live
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y texlive-latex-base texlive-latex-extra
+
+    - name: Check current backup file versions
+      run: |
+        echo "Current backup files:"
+        ls -lh unicode2latex/tex/
+        echo ""
+        stat unicode2latex/tex/unicode-math-table.tex
+        stat unicode2latex/tex/unicode-math-xetex.sty
+
+    - name: Update backup files from system
+      run: |
+        make update-tex-files
+
+    - name: Check if files changed
+      id: check_changes
+      run: |
+        if git diff --quiet unicode2latex/tex/; then
+          echo "changed=false" >> $GITHUB_OUTPUT
+          echo "No changes detected in backup files"
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+          echo "Changes detected in backup files"
+          git diff --stat unicode2latex/tex/
+        fi
+
+    - name: Create Pull Request
+      if: steps.check_changes.outputs.changed == 'true'
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "Update backup TeX files from system"
+        title: "Update backup TeX files"
+        body: |
+          This PR updates the backup TeX files in `unicode2latex/tex/` from the system installation.
+
+          The files have been updated using:
+          ```bash
+          make update-tex-files
+          ```
+
+          **Files updated:**
+          - `unicode-math-table.tex`
+          - `unicode-math-xetex.sty`
+
+          These backup files are used on Windows and systems without TeX Live installed.
+
+          Please review the changes and merge if they look correct.
+        branch: update-tex-files
+        delete-branch: true

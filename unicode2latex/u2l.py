@@ -55,25 +55,42 @@ global_prefer_unicode_math = False
 # fallback for locating the following files, if 'kpsewhich' misbehaves
 unicode_math_dir = '/usr/share/texlive/texmf-dist/tex/latex/unicode-math'
 
+# backup location: files bundled with this package
+unicode_math_backup_dir = os.path.join(os.path.dirname(__file__), 'tex')
+
 # this is useless but it silence a program checker
 unicode_math_table_file = unicode_math_xetex_file = None
 
-try:
-    for j in 'unicode-math-table.tex' , 'unicode-math-xetex.sty':
-        with subprocess.Popen(['kpsewhich', j], stdout=subprocess.PIPE) as p:
+for j in 'unicode-math-table.tex' , 'unicode-math-xetex.sty':
+    a = None
+    try:
+        with subprocess.Popen(['kpsewhich', j], stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
             a = p.stdout.read().strip()
             a = a.decode('utf-8', errors='surrogateescape')
             p.wait()
+    except (FileNotFoundError, OSError) as e_:
+        logger.info('kpsewhich not available (%s), will use fallback locations', e_)
+        a = None
+    except Exception as e_:
+        logger.warning('Error running kpsewhich for %r: %s', j, e_)
+        a = None
+
+    if not a or not os.path.isfile(a):
+        if a:
+            logger.warning('kpsewhich: cannot locate %r', j)
+        # Try system texlive directory
+        a = os.path.join(unicode_math_dir, j)
         if not os.path.isfile(a):
-            logger.warning('kpsewhich : cannot locate %r', j)
-            a = os.path.join(unicode_math_dir, j)
+            logger.warning('Cannot locate %r in system texlive directory', j)
+            # Try backup location bundled with package
+            a = os.path.join(unicode_math_backup_dir, j)
             if not os.path.isfile(a):
-                logger.warning('Cannot locate %r', j)
+                logger.warning('Cannot locate %r in backup directory either', j)
                 a = None
-        f = j.replace('-','_')[:-4] + '_file'
-        globals()[f] = a
-except Exception as e_:
-    logger.exception('While running kpsewhich unicode-math-table.tex')
+            else:
+                logger.info('Using backup copy of %r from package', j)
+    f = j.replace('-','_')[:-4] + '_file'
+    globals()[f] = a
 
 ## https://en.wikipedia.org/wiki/Combining_Diacritical_Marks
 ## https://en.wikipedia.org/wiki/Combining_Diacritical_Marks_for_Symbols

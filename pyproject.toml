@@ -41,3 +41,6 @@ latex2unicode = "unicode2latex.u2l:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["unicode2latex*"]
+
+[tool.setuptools.package-data]
+unicode2latex = ["tex/*.tex", "tex/*.sty"]
