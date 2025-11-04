@@ -18,7 +18,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from unicode2latex import u2l
 
-maincli = 'unicode2latex/u2l.py'
+# Get the absolute path to the script for cross-platform compatibility
+_test_dir = os.path.dirname(os.path.abspath(__file__))
+_repo_root = os.path.dirname(_test_dir)
+maincli = os.path.join(_repo_root, 'unicode2latex', 'u2l.py')
 
 class TestCLIAccentModeArgument(unittest.TestCase):
     """Test the --accent-mode command-line argument."""
@@ -31,7 +34,7 @@ class TestCLIAccentModeArgument(unittest.TestCase):
             [sys.executable, maincli, '--help'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertIn('--accent-mode', result.stdout)
         self.assertIn('text', result.stdout)
@@ -44,7 +47,7 @@ class TestCLIAccentModeArgument(unittest.TestCase):
             [sys.executable, maincli, 'é'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         self.assertIn("\\'", result.stdout)
@@ -56,7 +59,7 @@ class TestCLIAccentModeArgument(unittest.TestCase):
             [sys.executable, maincli, '--accent-mode=text', 'é'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         self.assertIn("\\'", result.stdout)
@@ -68,7 +71,7 @@ class TestCLIAccentModeArgument(unittest.TestCase):
             [sys.executable, maincli, '--accent-mode=math', 'é'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         self.assertIn("\\acute", result.stdout)
@@ -80,7 +83,7 @@ class TestCLIAccentModeArgument(unittest.TestCase):
             [sys.executable, maincli, '--accent-mode=auto', 'é'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         # Currently auto defaults to text
@@ -92,7 +95,7 @@ class TestCLIAccentModeArgument(unittest.TestCase):
             [sys.executable, maincli, '--accent-mode=invalid', 'é'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('invalid choice', result.stderr.lower())
@@ -107,7 +110,7 @@ class TestCLIAccentModeWithMultipleAccents(unittest.TestCase):
             [sys.executable, maincli, 'é è ê ñ ü'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         output = result.stdout
@@ -129,7 +132,7 @@ class TestCLIAccentModeWithMultipleAccents(unittest.TestCase):
             [sys.executable, maincli, '--accent-mode=math', 'é è ê ñ ü'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         output = result.stdout
@@ -160,7 +163,7 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
                 [sys.executable, maincli, '--input', temp_file],
                 capture_output=True,
                 text=True,
-                cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                cwd=_repo_root
             )
             self.assertEqual(result.returncode, 0)
             self.assertIn("\\'", result.stdout)
@@ -179,7 +182,7 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
                 [sys.executable, maincli, '--accent-mode=math', '--input', temp_file],
                 capture_output=True,
                 text=True,
-                cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                cwd=_repo_root
             )
             self.assertEqual(result.returncode, 0)
             self.assertIn("\\acute", result.stdout)
@@ -194,7 +197,7 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
             input='é',
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         self.assertIn("\\'", result.stdout)
@@ -207,7 +210,7 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
             input='é',
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         self.assertIn("\\acute", result.stdout)
@@ -223,7 +226,7 @@ class TestCLIAccentModeWithOtherOptions(unittest.TestCase):
             [sys.executable, maincli, '--accent-mode=math', '--no-accents', 'é'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         # Should preserve the unicode character
@@ -235,7 +238,7 @@ class TestCLIAccentModeWithOtherOptions(unittest.TestCase):
             [sys.executable, maincli, '--accent-mode=math', '--no-fonts', 'é ⅅ'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         # Should have math accent
@@ -250,7 +253,7 @@ class TestCLIAccentModeWithOtherOptions(unittest.TestCase):
             [sys.executable, maincli, '--accent-mode=math', '--prefer-unicode-math', 'é'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         self.assertIn("\\acute", result.stdout)
@@ -265,7 +268,7 @@ class TestCLIAccentModeEdgeCases(unittest.TestCase):
             [sys.executable, maincli, ''],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout.strip(), '')
@@ -276,7 +279,7 @@ class TestCLIAccentModeEdgeCases(unittest.TestCase):
             [sys.executable, maincli, '--accent-mode=math', ''],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout.strip(), '')
@@ -287,7 +290,7 @@ class TestCLIAccentModeEdgeCases(unittest.TestCase):
             [sys.executable, maincli, '--accent-mode=math', 'hello world'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout.strip(), 'hello world')
@@ -298,7 +301,7 @@ class TestCLIAccentModeEdgeCases(unittest.TestCase):
             [sys.executable, maincli, 'é α è'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         output = result.stdout
@@ -312,7 +315,7 @@ class TestCLIAccentModeEdgeCases(unittest.TestCase):
             [sys.executable, maincli, '--accent-mode=math', 'é α è'],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            cwd=_repo_root
         )
         self.assertEqual(result.returncode, 0)
         output = result.stdout
