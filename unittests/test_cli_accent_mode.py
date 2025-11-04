@@ -36,10 +36,15 @@ class TestCLIAccentModeArgument(unittest.TestCase):
             text=True,
             cwd=_repo_root
         )
-        self.assertIn('--accent-mode', result.stdout)
-        self.assertIn('text', result.stdout)
-        self.assertIn('math', result.stdout)
-        self.assertIn('auto', result.stdout)
+        # On some systems, help might go to stderr if there's an issue
+        output = result.stdout + result.stderr
+        # Debug output for CI
+        if not output:
+            print(f"DEBUG: returncode={result.returncode}, stdout={result.stdout!r}, stderr={result.stderr!r}", file=sys.stderr)
+        self.assertIn('--accent-mode', output, f"Help output was empty. returncode={result.returncode}, stderr={result.stderr}")
+        self.assertIn('text', output)
+        self.assertIn('math', output)
+        self.assertIn('auto', output)
 
     def test_accent_mode_default_text(self):
         """Test that default accent mode is 'text'."""
