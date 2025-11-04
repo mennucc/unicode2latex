@@ -452,6 +452,48 @@ git config --local core.hooksPath .githooks/
 pip install -e .
 ```
 
+### Makefile Targets
+
+The project includes a Makefile for common development tasks:
+
+```bash
+# Update backup TeX files from system (requires TeX Live)
+make update-tex-files
+
+# Run all tests
+make test
+
+# Run linter
+make lint
+
+# Clean build artifacts
+make clean
+
+# Build distribution packages
+make build
+
+# Install in development mode
+make install
+
+# Show all available targets
+make help
+```
+
+#### Updating Backup TeX Files
+
+The package includes backup copies of `unicode-math-table.tex` and `unicode-math-xetex.sty` in the `unicode2latex/tex/` directory. These files should be updated when new versions of the unicode-math package are released:
+
+```bash
+make update-tex-files
+```
+
+This command:
+- Locates the current system files using `kpsewhich`
+- Copies them to `unicode2latex/tex/` (only if newer)
+- Shows file information and version details
+
+A GitHub Actions workflow can also automatically check for updates monthly and create a pull request if the files have changed.
+
 ### Project Structure
 
 ```
