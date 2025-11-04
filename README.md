@@ -498,9 +498,12 @@ A GitHub Actions workflow can also automatically check for updates monthly and c
 
 ```
 unicode2latex/
-├── unicode2latex/              # code
-│   ├── u2l.py                  # Main module
-│   ├── FakePlasTeX/            # Tokenizer for LaTeX parsing
+├── unicode2latex/              # Main package
+│   ├── u2l.py                  # Core conversion logic
+│   ├── FakePlasTeX/            # LaTeX tokenizer
+│   └── tex/                    # Backup TeX files (NEW)
+│       ├── unicode-math-table.tex
+│       └── unicode-math-xetex.sty
 ├── unittests/                  # Test suite (285 tests)
 │   ├── test_unicode2latex.py   # Unicode → LaTeX tests
 │   ├── test_latex2unicode.py   # LaTeX → Unicode tests
@@ -512,6 +515,11 @@ unicode2latex/
 │   ├── test_thread_safety.py   # Concurrency tests
 │   ├── test_bug5_fix.py        # Thread safety fix tests
 │   └── test_bug6_investigation.py
+├── .github/workflows/          # CI/CD
+│   ├── test.yaml               # Tests on Ubuntu & Windows
+│   └── update-tex-files.yaml   # Monthly TeX file updates
+├── Makefile                    # Development tasks (NEW)
+├── CLAUDE.md                   # Claude Code guide (NEW)
 ├── BUGS.md                     # Known bugs and fixes
 ├── README.md                   # This file
 ├── pyproject.toml              # Package configuration
@@ -595,6 +603,7 @@ On Linux, tests use system TeX Live installation. On Windows, tests use the bund
 ### Automated Maintenance
 
 A separate GitHub Actions workflow checks for updates to unicode-math files monthly and can be triggered manually. If updates are found, it automatically creates a pull request.
+
 ## Acknowledgements
 
 The principal author has used the Python code editor [`Wing IDE` by Wingware](http://wingware.com/) to develop this project, with a license kindly donated by WingWare.
