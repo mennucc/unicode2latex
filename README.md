@@ -2,9 +2,10 @@
 
 Convert Unicode text to LaTeX and vice versa.
 
-[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python Version](https://img.shields.io/badge/python-3.8--3.14-blue.svg)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/tests-285%20passing-brightgreen.svg)](unittests/)
 [![License](https://img.shields.io/badge/license-BSD-blue.svg)](LICENSE.txt)
+[![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey.svg)]()
 
 ## Table of Contents
 
@@ -59,6 +60,14 @@ git clone https://github.com/yourusername/unicode2latex.git
 cd unicode2latex
 pip install .
 ```
+
+### Platform Support
+
+- **Linux**: Full support with optional TeX Live integration
+- **Windows**: Full support using bundled backup files
+- **macOS**: Full support with optional TeX Live integration
+
+The package includes backup copies of required TeX files (`unicode-math-table.tex` and `unicode-math-xetex.sty`), so it works out-of-the-box on all platforms **without requiring TeX Live installation**.
 
 ## unicode2latex Usage
 
@@ -347,6 +356,8 @@ latex2unicode --greek --math "\\alpha \\cap \\beta"
 
 ## LaTeX Package Requirements
 
+**Note**: These are LaTeX packages needed to **compile the generated LaTeX output**, not to run `unicode2latex` itself. The `unicode2latex` Python package works standalone without any TeX installation.
+
 ### ASCII Output
 
 If your output is pure ASCII, standard LaTeX is sufficient:
@@ -528,10 +539,20 @@ See file `LICENSE.txt` in the code distribution.
 
 ## Continuous Integration
 
-The code is tested [using *GitHub Actions*](https://github.com/mennucc/unicode2latex/actions/workflows/test.yaml) inside an Ubuntu environment, for Python 3.8 up to 3.13 (but not yet with 3.14).
+The code is tested [using *GitHub Actions*](https://github.com/mennucc/unicode2latex/actions/workflows/test.yaml) on both Ubuntu and Windows, for Python 3.8 up to 3.14.
+
+**Test Matrix:**
+- **Operating Systems**: Ubuntu 24.04, Windows (latest)
+- **Python Versions**: 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14
+- **Total**: 14 test jobs (7 Python versions × 2 OS)
+
+On Linux, tests use system TeX Live installation. On Windows, tests use the bundled backup TeX files, verifying cross-platform compatibility.
 
 ![Test results](https://github.com/mennucc/unicode2latex/actions/workflows/test.yaml/badge.svg)
 
+### Automated Maintenance
+
+A separate GitHub Actions workflow checks for updates to unicode-math files monthly and can be triggered manually. If updates are found, it automatically creates a pull request.
 ## Acknowledgements
 
 The principal author has used the Python code editor [`Wing IDE` by Wingware](http://wingware.com/) to develop this project, with a license kindly donated by WingWare.

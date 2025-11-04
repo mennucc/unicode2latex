@@ -11,11 +11,12 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        os: [ubuntu-24.04, windows-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
     - uses: actions/checkout@v4
@@ -27,7 +28,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install TeX Live
+    - name: Install TeX Live (Linux only)
+      if: runner.os == 'Linux'
       run: |
         sudo apt-get update
         sudo apt-get install -y texlive-latex-base texlive-latex-extra
@@ -38,11 +40,13 @@ jobs:
         pip install -e .
 
     - name: Install test dependencies
+      shell: bash
       run: |
         if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
 
     - name: Lint with flake8 (optional)
       continue-on-error: true
+      shell: bash
       run: |
         pip install flake8
         # stop the build if there are Python syntax errors or undefined names
@@ -55,6 +59,7 @@ jobs:
         python -m unittest discover unittests -v
 
     - name: Test CLI commands
+      shell: bash
       run: |
         unicode2latex "café"
         unicode2latex --accent-mode=math "é"
