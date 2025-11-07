@@ -135,7 +135,7 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
 
     def test_file_input_text_mode(self):
         """Test file input with text mode."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', suffix='.txt', delete=False) as f:
             f.write('café résumé')
             temp_file = f.name
 
@@ -149,7 +149,7 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
 
     def test_file_input_math_mode(self):
         """Test file input with math mode."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', suffix='.txt', delete=False) as f:
             f.write('café résumé')
             temp_file = f.name
 
