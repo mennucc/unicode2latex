@@ -13,7 +13,7 @@
 ##  and many decompositions
 ## https://www.compart.com/en/unicode/decomposition/
 
-doc_unicode2latex = r"""
+_doc_unicode2latex_unicode = r"""
 This script will convert unicode to a suitable LaTeX representation.
 
 It will convert accents, e.g. è  → \`{e}   ũ → \widetilde{u}.
@@ -25,7 +25,7 @@ it will convert greek letters, 𝛼  → '\alpha'
 It will convert math symbols, e.g.  ∩ → \cap .
 """
 
-doc_latex2unicode = r"""
+_doc_latex2unicode_unicode = r"""
 This script will convert  LaTeX to unicode.
 
 With the --greek arguments,
@@ -37,9 +37,57 @@ With the --math arguments,
 It does not (yet) convert accents or fonts.
 """
 
+_doc_unicode2latex_ascii = r"""
+This script will convert unicode to a suitable LaTeX representation.
+
+It will convert accents, e.g. e-grave to \`{e}, u-tilde to \widetilde{u}.
+
+It will express fonts, e.g. double-struck D to \symbbit{D}.
+
+It will convert greek letters, alpha to '\alpha'.
+
+It will convert math symbols, e.g. intersection to \cap.
+"""
+
+_doc_latex2unicode_ascii = r"""
+This script will convert LaTeX to unicode.
+
+With the --greek arguments,
+  it will convert greek letters, '\alpha' to alpha.
+
+With the --math arguments,
+  it will convert math symbols, e.g. \cap to intersection.
+
+It does not (yet) convert accents or fonts.
+"""
+
+doc_unicode2latex = _doc_unicode2latex_unicode
+doc_latex2unicode = _doc_latex2unicode_unicode
+
 
 import os, sys, copy, io, argparse, unicodedata, collections, subprocess, logging, re
 logger = logging.getLogger('unicode2latex')
+
+
+def _stream_supports_unicode(stream):
+    """Return True if the given text stream can encode common Unicode symbols."""
+    if not stream:
+        return False
+    encoding = getattr(stream, 'encoding', None)
+    if not encoding:
+        return False
+    try:
+        "→ ∩ α".encode(encoding)
+        return True
+    except (UnicodeEncodeError, LookupError):
+        return False
+
+
+def _select_help_docs():
+    """Choose Unicode or ASCII help text based on stdout encoding."""
+    if _stream_supports_unicode(getattr(sys, 'stdout', None)):
+        return _doc_unicode2latex_unicode, _doc_latex2unicode_unicode
+    return _doc_unicode2latex_ascii, _doc_latex2unicode_ascii
 
 if __name__ == '__main__':
     syslogger = sys.stderr.write
@@ -643,13 +691,14 @@ def tex2uni(inp, out, D):
 def main(argv=sys.argv):
     exe_name = os.path.basename(argv[0])
     is_latex2unicode = (exe_name == 'latex2unicode')
+    doc_unicode2latex_local, doc_latex2unicode_local = _select_help_docs()
     #
     global verbose
     parser = argparse.ArgumentParser(prog=exe_name, 
                                      description= 'convert LaTeX to Unicode' if is_latex2unicode else \
                                         'convert Unicode to LaTeX',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     epilog = doc_latex2unicode if is_latex2unicode else doc_unicode2latex)
+                                     epilog = doc_latex2unicode_local if is_latex2unicode else doc_unicode2latex_local)
     parser.add_argument('--verbose','-v',action='count',default=verbose)
     parser.add_argument('--output','-o',
                         #required = is_latex2unicode,
@@ -744,4 +793,5 @@ def main(argv=sys.argv):
     return (0)
 
 if __name__ == '__main__':
+    os.environ["PYTHONIOENCODING"] = "utf-8"
     sys.exit(main(sys.argv))
