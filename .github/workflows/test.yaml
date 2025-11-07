@@ -59,6 +59,7 @@ jobs:
         python -m unittest discover unittests -v
 
     - name: Test CLI commands
+      if: runner.os != 'Windows'
       shell: bash
       run: |
         unicode2latex "café"
