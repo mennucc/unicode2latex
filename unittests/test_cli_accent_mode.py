@@ -25,12 +25,16 @@ maincli = os.path.join(_repo_root, 'unicode2latex', 'u2l.py')
 
 def _run_cli(*cli_args, **kwargs):
     """Run the unicode2latex CLI with consistent UTF-8 pipes across platforms."""
+    env = os.environ.copy()
+    env.setdefault('PYTHONIOENCODING', 'utf-8')
+    env.setdefault('PYTHONUTF8', '1')
     run_kwargs = {
         'capture_output': True,
         'text': True,
         'encoding': 'utf-8',
         'errors': 'replace',
         'cwd': _repo_root,
+        'env': env,
     }
     run_kwargs.update(kwargs)
     return subprocess.run([sys.executable, maincli, *cli_args], **run_kwargs)
