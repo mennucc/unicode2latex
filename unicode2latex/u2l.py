@@ -89,6 +89,11 @@ def _select_help_docs():
         return _doc_unicode2latex_unicode, _doc_latex2unicode_unicode
     return _doc_unicode2latex_ascii, _doc_latex2unicode_ascii
 
+
+def _open_output_file(path):
+    """Open an output file encoded as UTF-8 with BOM for Windows compatibility."""
+    return open(path, 'w', encoding='utf-8-sig', newline='')
+
 if __name__ == '__main__':
     syslogger = sys.stderr.write
 else:
@@ -737,7 +742,7 @@ def main(argv=sys.argv):
     #
     if is_latex2unicode:
         if args.output not in (None, '-'):
-            out = open(args.output, 'w')
+            out = _open_output_file(args.output)
         else:
             out = sys.stdout
         #
@@ -759,7 +764,7 @@ def main(argv=sys.argv):
     if args.input or args.stdin:
         out=sys.stdout
         if args.output:
-            out = open(args.output, 'w')
+            out = _open_output_file(args.output)
         if args.text:
             logger.warning('Cmdline %r ignored', args.text)
 

@@ -294,6 +294,8 @@ cat notes.txt | unicode2latex --stdin > notes.tex
 grep "café" data.txt | unicode2latex --stdin
 ```
 
+> **Windows console note:** The default `cmd.exe`/PowerShell encodings are typically cp1252, so writing Unicode-rich output directly to stdout may raise `UnicodeEncodeError` or mangle characters. When running `unicode2latex` or `latex2unicode` on Windows, prefer `--output FILE` to generate a UTF-8 file (with BOM, LF line endings) and view it in an editor that understands Unicode. Both `unicode2latex` and `latex2unicode` intentionally use Unix-style `\n` line breaks for portability; convert to CRLF afterwards if a tool absolutely requires it.
+
 #### Advanced options
 
 ```bash

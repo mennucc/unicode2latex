@@ -12,6 +12,7 @@ import os
 import io
 import tempfile
 import subprocess
+import codecs
 
 # Add parent directory to path to from unicode2latex import u2l
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -160,6 +161,30 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
             self.assertNotIn("\\'", result.stdout)
         finally:
             os.unlink(temp_file)
+
+
+class TestCLIAccentModeOutputFiles(unittest.TestCase):
+    """Ensure --output writes UTF-8 with BOM."""
+
+    def test_output_file_has_bom_and_utf8(self):
+        """unicode2latex --output should produce UTF-8 BOM files."""
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', suffix='.txt', delete=False) as f:
+            f.write('café')
+            input_file = f.name
+        fd, output_file = tempfile.mkstemp(suffix='.txt')
+        os.close(fd)
+
+        try:
+            result = _run_cli('--input', input_file, '--output', output_file)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            with open(output_file, 'rb') as fh:
+                data = fh.read()
+            self.assertTrue(data.startswith(codecs.BOM_UTF8))
+            text = data.decode('utf-8-sig')
+            self.assertIn("\\'", text)
+        finally:
+            os.unlink(input_file)
+            os.unlink(output_file)
 
     def test_stdin_input_text_mode(self):
         """Test stdin input with text mode."""
