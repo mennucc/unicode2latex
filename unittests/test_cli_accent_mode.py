@@ -23,6 +23,18 @@ _test_dir = os.path.dirname(os.path.abspath(__file__))
 _repo_root = os.path.dirname(_test_dir)
 maincli = os.path.join(_repo_root, 'unicode2latex', 'u2l.py')
 
+def _run_cli(*cli_args, **kwargs):
+    """Run the unicode2latex CLI with consistent UTF-8 pipes across platforms."""
+    run_kwargs = {
+        'capture_output': True,
+        'text': True,
+        'encoding': 'utf-8',
+        'errors': 'replace',
+        'cwd': _repo_root,
+    }
+    run_kwargs.update(kwargs)
+    return subprocess.run([sys.executable, maincli, *cli_args], **run_kwargs)
+
 class TestCLIAccentModeArgument(unittest.TestCase):
     """Test the --accent-mode command-line argument."""
 
@@ -30,12 +42,7 @@ class TestCLIAccentModeArgument(unittest.TestCase):
 
     def test_help_shows_accent_mode_option(self):
         """Test that --help shows the --accent-mode option."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--help'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--help')
         # On some systems, help might go to stderr if there's an issue
         output = result.stdout + result.stderr
         # Debug output for CI
@@ -48,60 +55,35 @@ class TestCLIAccentModeArgument(unittest.TestCase):
 
     def test_accent_mode_default_text(self):
         """Test that default accent mode is 'text'."""
-        result = subprocess.run(
-            [sys.executable, maincli, 'é'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('é')
         self.assertEqual(result.returncode, 0)
         self.assertIn("\\'", result.stdout)
         self.assertNotIn("\\acute", result.stdout)
 
     def test_accent_mode_text_explicit(self):
         """Test --accent-mode=text explicitly."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--accent-mode=text', 'é'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--accent-mode=text', 'é')
         self.assertEqual(result.returncode, 0)
         self.assertIn("\\'", result.stdout)
         self.assertNotIn("\\acute", result.stdout)
 
     def test_accent_mode_math(self):
         """Test --accent-mode=math."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--accent-mode=math', 'é'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--accent-mode=math', 'é')
         self.assertEqual(result.returncode, 0)
         self.assertIn("\\acute", result.stdout)
         self.assertNotIn("\\'", result.stdout)
 
     def test_accent_mode_auto(self):
         """Test --accent-mode=auto (currently defaults to text)."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--accent-mode=auto', 'é'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--accent-mode=auto', 'é')
         self.assertEqual(result.returncode, 0)
         # Currently auto defaults to text
         self.assertIn("\\'", result.stdout)
 
     def test_invalid_accent_mode_rejected(self):
         """Test that invalid accent mode is rejected."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--accent-mode=invalid', 'é'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--accent-mode=invalid', 'é')
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('invalid choice', result.stderr.lower())
 
@@ -111,12 +93,7 @@ class TestCLIAccentModeWithMultipleAccents(unittest.TestCase):
 
     def test_multiple_accents_text_mode(self):
         """Test multiple accents in text mode."""
-        result = subprocess.run(
-            [sys.executable, maincli, 'é è ê ñ ü'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('é è ê ñ ü')
         self.assertEqual(result.returncode, 0)
         output = result.stdout
         self.assertIn("\\'", output)
@@ -133,12 +110,7 @@ class TestCLIAccentModeWithMultipleAccents(unittest.TestCase):
 
     def test_multiple_accents_math_mode(self):
         """Test multiple accents in math mode."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--accent-mode=math', 'é è ê ñ ü'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--accent-mode=math', 'é è ê ñ ü')
         self.assertEqual(result.returncode, 0)
         output = result.stdout
         self.assertIn("\\acute", output)
@@ -164,12 +136,7 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
             temp_file = f.name
 
         try:
-            result = subprocess.run(
-                [sys.executable, maincli, '--input', temp_file],
-                capture_output=True,
-                text=True,
-                cwd=_repo_root
-            )
+            result = _run_cli('--input', temp_file)
             self.assertEqual(result.returncode, 0)
             self.assertIn("\\'", result.stdout)
             self.assertNotIn("\\acute", result.stdout)
@@ -183,12 +150,7 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
             temp_file = f.name
 
         try:
-            result = subprocess.run(
-                [sys.executable, maincli, '--accent-mode=math', '--input', temp_file],
-                capture_output=True,
-                text=True,
-                cwd=_repo_root
-            )
+            result = _run_cli('--accent-mode=math', '--input', temp_file)
             self.assertEqual(result.returncode, 0)
             self.assertIn("\\acute", result.stdout)
             self.assertNotIn("\\'", result.stdout)
@@ -197,26 +159,14 @@ class TestCLIAccentModeWithFileInput(unittest.TestCase):
 
     def test_stdin_input_text_mode(self):
         """Test stdin input with text mode."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--stdin'],
-            input='é',
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--stdin', input='é')
         self.assertEqual(result.returncode, 0)
         self.assertIn("\\'", result.stdout)
         self.assertNotIn("\\acute", result.stdout)
 
     def test_stdin_input_math_mode(self):
         """Test stdin input with math mode."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--accent-mode=math', '--stdin'],
-            input='é',
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--accent-mode=math', '--stdin', input='é')
         self.assertEqual(result.returncode, 0)
         self.assertIn("\\acute", result.stdout)
         self.assertNotIn("\\'", result.stdout)
@@ -227,24 +177,14 @@ class TestCLIAccentModeWithOtherOptions(unittest.TestCase):
 
     def test_accent_mode_with_no_accents(self):
         """Test that --no-accents disables accent conversion even with accent-mode."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--accent-mode=math', '--no-accents', 'é'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--accent-mode=math', '--no-accents', 'é')
         self.assertEqual(result.returncode, 0)
         # Should preserve the unicode character
         self.assertIn('é', result.stdout)
 
     def test_accent_mode_with_no_fonts(self):
         """Test accent mode with --no-fonts."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--accent-mode=math', '--no-fonts', 'é ⅅ'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--accent-mode=math', '--no-fonts', 'é ⅅ')
         self.assertEqual(result.returncode, 0)
         # Should have math accent
         self.assertIn("\\acute", result.stdout)
@@ -254,12 +194,7 @@ class TestCLIAccentModeWithOtherOptions(unittest.TestCase):
 
     def test_accent_mode_with_prefer_unicode_math(self):
         """Test accent mode with --prefer-unicode-math."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--accent-mode=math', '--prefer-unicode-math', 'é'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--accent-mode=math', '--prefer-unicode-math', 'é')
         self.assertEqual(result.returncode, 0)
         self.assertIn("\\acute", result.stdout)
 
@@ -269,45 +204,25 @@ class TestCLIAccentModeEdgeCases(unittest.TestCase):
 
     def test_empty_input_text_mode(self):
         """Test empty input with text mode."""
-        result = subprocess.run(
-            [sys.executable, maincli, ''],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('')
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout.strip(), '')
 
     def test_empty_input_math_mode(self):
         """Test empty input with math mode."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--accent-mode=math', ''],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--accent-mode=math', '')
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout.strip(), '')
 
     def test_no_accents_in_input(self):
         """Test input without accents in math mode."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--accent-mode=math', 'hello world'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--accent-mode=math', 'hello world')
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout.strip(), 'hello world')
 
     def test_mixed_unicode_text_mode(self):
         """Test mixed unicode (accents + greek) with text mode."""
-        result = subprocess.run(
-            [sys.executable, maincli, 'é α è'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('é α è')
         self.assertEqual(result.returncode, 0)
         output = result.stdout
         self.assertIn("\\'", output)
@@ -316,12 +231,7 @@ class TestCLIAccentModeEdgeCases(unittest.TestCase):
 
     def test_mixed_unicode_math_mode(self):
         """Test mixed unicode (accents + greek) with math mode."""
-        result = subprocess.run(
-            [sys.executable, maincli, '--accent-mode=math', 'é α è'],
-            capture_output=True,
-            text=True,
-            cwd=_repo_root
-        )
+        result = _run_cli('--accent-mode=math', 'é α è')
         self.assertEqual(result.returncode, 0)
         output = result.stdout
         self.assertIn("\\acute", output)
