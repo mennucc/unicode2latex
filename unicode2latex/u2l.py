@@ -179,6 +179,33 @@ accents_textmode_to_mathmode = {
     # 'r': ring above (no standard math command)
 }
 
+# Fallback for Unicode “smart” quotes 
+unicode_quotes = {
+    0x2018: '`',
+    0x2019: "'",
+    0x201C: '``',
+    0x201D: "''",
+    0x2032: "'",   # prime (for feet/minutes)
+    0x2033: "''",  # double prime (for inches/seconds)
+    0x2034: "'''", # triple prime
+    0x2039: '<',   # single left-pointing angle quotation mark
+    0x203A: '>',   # single right-pointing angle quotation mark    
+}
+# Fallback for Unicode “smart” spacing and hypens
+unicode_dashes = {
+    0x2010: '-',  # hyphen
+    0x2011: '-',  # non-breaking hyphen
+    0x2012: '-',  # figure dash
+    0x2013: '--', # en dash
+    0x2014: '---', # em dash
+    0x2015: '---', # horizontal bar
+    0x00A0: '~',   # non-breaking space
+    0x2002: ' ',   # en space
+    0x2003: ' ',   # em space
+    0x2009: ' ',   # thin space (or '\,' if you want TeX thin space)
+    0x202F: ' ',   # narrow no-break space    
+}
+
 ## these unicodes exists in unicode-math-table.tex but they do not work in practice
 
 math_unicode_skip = [
@@ -459,7 +486,8 @@ modifiers = {
 
 
 class Decompose_to_tex(object):
-  def __init__(self, add_font_modifiers=True, convert_accents = True, prefer_unicode_math = global_prefer_unicode_math, input_file='cmdline', accent_mode='text'):
+  def __init__(self, add_font_modifiers=True, convert_accents = True, prefer_unicode_math = global_prefer_unicode_math,
+                 input_file='cmdline', accent_mode='text', convert_quotes=False, convert_dashes=False):
       self.output = []
       self.add_font_modifiers = add_font_modifiers
       self.convert_accents = convert_accents
@@ -477,6 +505,8 @@ class Decompose_to_tex(object):
       if accent_mode not in ('text', 'math', 'auto'):
           raise ValueError(f"accent_mode must be 'text', 'math', or 'auto', got {accent_mode!r}")
       self.accent_mode = accent_mode
+      self.convert_quotes = convert_quotes
+      self.convert_dashes = convert_dashes
   #
   def update_extra(self, D):
       self.extra_unicode2latex.update(D)
@@ -514,6 +544,13 @@ class Decompose_to_tex(object):
     cat = unicodedata.category(char)
     dec = unicodedata.decomposition(char)
     name = unicodedata.name(char, '')
+    #
+    if self.convert_quotes and code in unicode_quotes:
+        output.append(unicode_quotes[code])
+        return
+    if self.convert_dashes and code in unicode_dashes:
+        output.append(unicode_dashes[code])
+        return
     #
     if code in self.extra_unicode2latex :
         latex = self.extra_unicode2latex[code]
@@ -731,6 +768,19 @@ def main(argv=sys.argv):
         parser.add_argument('--accent-mode', choices=['text', 'math', 'auto'],
                             default='text',
                             help="accent output mode: 'text' for \\'{e}, 'math' for \\acute{e}, 'auto' for auto-detect (default: text)")
+        parser.add_argument('--convert-quotes', '--CQ', action='store_true',
+                            help=("convert Unicode quotes/primes to ASCII: "
+                                  "U+2018/U+2019 (‘ ’)->`/' ; "
+                                  "U+201C/U+201D (“ ”)->``/'' ; "
+                                  "U+2039/U+203A (‹ ›)-></> ; "
+                                  "U+2032/U+2033/U+2034 (′ ″ ‴)->'/''/'''"))
+        parser.add_argument('--convert-dashes', '--CD', action='store_true',
+                            help=("convert Unicode dashes/spaces to ASCII: "
+                                  "U+2010/U+2011/U+2012 (‐‑‒)->- ; "
+                                  "U+2013 (–)->-- ; "
+                                  "U+2014/U+2015 (— ―)->--- ; "
+                                  "U+00A0 (NBSP)->~ ; "
+                                  "U+2002/U+2003/U+2009/U+202F -> space"))
     #
     args = parser.parse_args(argv[1:])
     #
@@ -773,11 +823,16 @@ def main(argv=sys.argv):
                                              convert_accents=(not args.no_accents),
                                              prefer_unicode_math = args.prefer_unicode_math,
                                              input_file=input_file_name,
-                                             accent_mode=args.accent_mode)
+                                             accent_mode=args.accent_mode,
+                                             convert_quotes=args.convert_quotes,
+                                             convert_dashes=args.convert_dashes,
+                                             )
+        #
         if args.stdin:
             I = sys.stdin
         else:
             I =  open(args.input)
+        #
         for L in I:
                 decompose_to_tex.parse(L)
                 out.write(decompose_to_tex.result)
@@ -788,7 +843,9 @@ def main(argv=sys.argv):
     decompose_to_tex =  Decompose_to_tex(add_font_modifiers=(not args.no_fonts),
                                          convert_accents=(not args.no_accents),
                                          prefer_unicode_math = args.prefer_unicode_math,
-                                         accent_mode=args.accent_mode)
+                                         accent_mode=args.accent_mode,
+                                         convert_quotes=args.convert_quotes,
+                                         convert_dashes=args.convert_dashes)
     #
     for  t in args.text:
         if not isinstance(t,str):

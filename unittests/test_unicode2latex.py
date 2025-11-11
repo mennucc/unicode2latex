@@ -231,6 +231,35 @@ class TestFontModifiers(unittest.TestCase):
         self.assertNotIn("\\symbf", result)
 
 
+class TestSmartQuotes(unittest.TestCase):
+    """Test conversion of Unicode smart quotes to TeX-friendly ASCII."""
+
+    def test_single_curly_quotes(self):
+        result = u2l.uni2tex("‘quoted’ text", convert_quotes=True)
+        self.assertEqual(result, "`quoted' text")
+
+    def test_double_curly_quotes(self):
+        result = u2l.uni2tex("“quoted” text", convert_quotes=True)
+        self.assertEqual(result, "``quoted'' text")
+
+
+class TestDashConversion(unittest.TestCase):
+    """Test conversion of dashes and thin spaces to ASCII equivalents."""
+
+    def test_basic_unicode_dashes(self):
+        self.assertEqual(u2l.uni2tex("‐", convert_dashes=True), "-")
+        self.assertEqual(u2l.uni2tex("–", convert_dashes=True), "--")
+        self.assertEqual(u2l.uni2tex("—", convert_dashes=True), "---")
+
+    def test_nbsp_to_tilde(self):
+        self.assertEqual(u2l.uni2tex("A\u00A0B", convert_dashes=True), "A~B")
+
+    def test_space_like_characters(self):
+        text = "\u2002\u2003\u2009\u202F"
+        result = u2l.uni2tex(text, convert_dashes=True)
+        self.assertEqual(result, "    ")  # four regular spaces
+
+
 class TestDecomposeToTexClass(unittest.TestCase):
     """Test the Decompose_to_tex class directly."""
 

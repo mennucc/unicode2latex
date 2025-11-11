@@ -182,6 +182,40 @@ x² y³ → x^{2} y^{3}
 | 𝐀 | `\mathbf{A}` | Bold |
 | 𝐴 | `\mathit{A}` | Italic |
 
+#### Quote & Dash Normalization
+
+Use `--convert-quotes/--CQ` and `--convert-dashes/--CD` to normalize typographic punctuation prior to conversion. Both flags default to *off* so source text remains untouched unless explicitly requested.
+
+**Quotes & primes (`--convert-quotes`):**
+
+| Unicode | Code point | ASCII output |
+|---------|------------|--------------|
+| ‘ | U+2018 | `` ` `` |
+| ’ | U+2019 | `'` |
+| “ | U+201C | `` `` `` |
+| ” | U+201D | `''` |
+| ‹ | U+2039 | `<` |
+| › | U+203A | `>` |
+| ′ | U+2032 | `'` |
+| ″ | U+2033 | `''` |
+| ‴ | U+2034 | `'''` |
+
+**Dashes, hyphens & spaces (`--convert-dashes`):**
+
+| Unicode | Code point | ASCII output |
+|---------|------------|--------------|
+| ‐ | U+2010 | `-` |
+| ‑ | U+2011 | `-` |
+| ‒ | U+2012 | `-` |
+| – | U+2013 | `--` |
+| — | U+2014 | `---` |
+| ― | U+2015 | `---` |
+|   (NBSP) | U+00A0 | `~` |
+|   (en space) | U+2002 | space |
+|   (em space) | U+2003 | space |
+|   (thin space) | U+2009 | space |
+|   (narrow no-break space) | U+202F | space |
+
 ### Command-Line Options
 
 ```
@@ -198,6 +232,8 @@ unicode2latex [OPTIONS] [text ...]
 
 **Conversion options:**
 - `--accent-mode {text,math,auto}` - Accent output mode (default: text)
+- `--convert-quotes`, `--CQ` - Normalize Unicode quotes/primes to ASCII equivalents (see [Quote & Dash Normalization](#quote--dash-normalization))
+- `--convert-dashes`, `--CD` - Normalize Unicode dashes/non-breaking spaces to ASCII equivalents (see [Quote & Dash Normalization](#quote--dash-normalization))
 - `--no-accents` - Do not convert accents
 - `--no-fonts` - Do not add font modifiers
 - `--prefer-unicode-math`, `-P` - Use unicode-math commands when possible
