@@ -96,7 +96,7 @@ def _select_help_docs():
 
 def _open_output_file(path):
     """Open an output file encoded as UTF-8 with BOM for Windows compatibility."""
-    return open(path, 'w', encoding='utf-8-sig', newline='')
+    return open(path, 'w', encoding='utf-8-sig', newline='', errors="surrogateescape")
 
 
 _ENCODING_SAMPLE_BYTES = 1 << 18
