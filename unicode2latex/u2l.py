@@ -811,22 +811,24 @@ def main(argv=sys.argv):
         tex2uni(inp, out, D)
         return (0)
     #
+    out=sys.stdout
+    if args.output:
+        out = _open_output_file(args.output)
+    #
+    input_file_name = 'stdin' if args.stdin else args.input
+    #
+    decompose_to_tex =  Decompose_to_tex(add_font_modifiers=(not args.no_fonts),
+                                         convert_accents=(not args.no_accents),
+                                         prefer_unicode_math = args.prefer_unicode_math,
+                                         input_file=input_file_name,
+                                         accent_mode=args.accent_mode,
+                                         convert_quotes=args.convert_quotes,
+                                         convert_dashes=args.convert_dashes,
+                                         )
+    #
     if args.input or args.stdin:
-        out=sys.stdout
-        if args.output:
-            out = _open_output_file(args.output)
         if args.text:
             logger.warning('Cmdline %r ignored', args.text)
-
-        input_file_name = 'stdin' if args.stdin else args.input
-        decompose_to_tex =  Decompose_to_tex(add_font_modifiers=(not args.no_fonts),
-                                             convert_accents=(not args.no_accents),
-                                             prefer_unicode_math = args.prefer_unicode_math,
-                                             input_file=input_file_name,
-                                             accent_mode=args.accent_mode,
-                                             convert_quotes=args.convert_quotes,
-                                             convert_dashes=args.convert_dashes,
-                                             )
         #
         if args.stdin:
             I = sys.stdin
@@ -840,18 +842,11 @@ def main(argv=sys.argv):
                 decompose_to_tex.line_count += 1
         return (0)
     #
-    decompose_to_tex =  Decompose_to_tex(add_font_modifiers=(not args.no_fonts),
-                                         convert_accents=(not args.no_accents),
-                                         prefer_unicode_math = args.prefer_unicode_math,
-                                         accent_mode=args.accent_mode,
-                                         convert_quotes=args.convert_quotes,
-                                         convert_dashes=args.convert_dashes)
-    #
     for  t in args.text:
         if not isinstance(t,str):
             t = str(t, "utf-8")
         decompose_to_tex.parse(t)
-        print(decompose_to_tex.result)
+        out.write(decompose_to_tex.result)
     return (0)
 
 if __name__ == '__main__':
