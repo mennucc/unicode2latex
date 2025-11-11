@@ -253,6 +253,10 @@ unicode2latex --input legacy.txt --input-encoding=cp1252
 
 Passing `--input-encoding=AUTO` tells the converter to read a small probe (up to 256 KiB), look for BOM markers, and fall back to [`chardet`](https://pypi.org/project/chardet/) for statistical guesses before streaming the rest of the data through the detected codec. AUTO works for both `--input` files and `--stdin` pipes without truncating or buffering the entire payload, making it practical for large pipelines. When the detector cannot decide, the CLI exits with a clear error so you can pick the encoding manually.
 
+> **Windows console note:** On stock Windows the active codepage is frequently CP1252 (or another ANSI/OEM page) rather than UTF-8, so both command-line arguments *and* `--input/--stdin` data may arrive in a legacy encoding. Always pass `--input-encoding` (and consider the same value when entering strings on the command line) to avoid mojibake. Recent Windows builds support `chcp 65001`/“Beta: Use Unicode UTF-8”, but the default remains locale-specific.
+
+Additionally, the Windows console host has long-standing issues with printing arbitrary Unicode: certain scalars render as placeholder glyphs or get replaced entirely (see [Stack Overflow answer #70013690](https://stackoverflow.com/a/70013690/5058564) for examples and workarounds). Prefer redirecting output to a file (`--output` or `> file.txt`) and viewing it in a UTF‑8 aware editor, or switch to Windows Terminal/PowerShell 7 with UTF‑8 enabled.
+
 ### Accent Mode
 
 The `--accent-mode` option controls how accented characters are converted:
