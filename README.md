@@ -226,6 +226,7 @@ unicode2latex [OPTIONS] [text ...]
 - `text` - Text to convert (positional arguments)
 - `--input FILE`, `-i FILE` - Read from file
 - `--stdin`, `-s` - Read from stdin
+- `--input-encoding ENCODING`, `--input-enc ENCODING` - Force the codec for `--input`/`--stdin`; pass `AUTO` to sniff BOMs and fall back to heuristic detection (default: UTF-8)
 
 **Output options:**
 - `--output FILE`, `-o FILE` - Write to file (default: stdout)
@@ -241,6 +242,16 @@ unicode2latex [OPTIONS] [text ...]
 **Other options:**
 - `--verbose`, `-v` - Verbose output
 - `--help`, `-h` - Show help message
+
+### Input Encoding
+
+By default both `unicode2latex` and `latex2unicode` expect UTF-8 input streams. Use `--input-encoding` (alias `--input-enc`) whenever a file or pipe uses a different codec:
+
+```bash
+unicode2latex --input legacy.txt --input-encoding=cp1252
+```
+
+Passing `--input-encoding=AUTO` tells the converter to read a small probe (up to 256 KiB), look for BOM markers, and fall back to [`chardet`](https://pypi.org/project/chardet/) for statistical guesses before streaming the rest of the data through the detected codec. AUTO works for both `--input` files and `--stdin` pipes without truncating or buffering the entire payload, making it practical for large pipelines. When the detector cannot decide, the CLI exits with a clear error so you can pick the encoding manually.
 
 ### Accent Mode
 

@@ -65,9 +65,13 @@ doc_unicode2latex = _doc_unicode2latex_unicode
 doc_latex2unicode = _doc_latex2unicode_unicode
 
 
-import os, sys, copy, io, argparse, unicodedata, collections, subprocess, logging, re
+import os, sys, copy, io, argparse, unicodedata, collections, subprocess, logging, re, codecs
 logger = logging.getLogger('unicode2latex')
 
+try:
+    import chardet
+except ImportError:
+    chardet = None
 
 def _stream_supports_unicode(stream):
     """Return True if the given text stream can encode common Unicode symbols."""
@@ -93,6 +97,149 @@ def _select_help_docs():
 def _open_output_file(path):
     """Open an output file encoded as UTF-8 with BOM for Windows compatibility."""
     return open(path, 'w', encoding='utf-8-sig', newline='')
+
+
+_ENCODING_SAMPLE_BYTES = 1 << 18
+
+
+def _detect_bytes_encoding(raw, description):
+    """Detect encoding from a raw byte sample."""
+    if not raw:
+        logger.warning('Input %s is empty; cannot auto-detect encoding', description)
+        return None
+    bom_map = (
+        (codecs.BOM_UTF8, 'utf-8-sig'),
+        (codecs.BOM_UTF16_LE, 'utf-16'),
+        (codecs.BOM_UTF16_BE, 'utf-16'),
+        (codecs.BOM_UTF32_LE, 'utf-32'),
+        (codecs.BOM_UTF32_BE, 'utf-32'),
+    )
+    for bom, enc in bom_map:
+        if raw.startswith(bom):
+            logger.debug('Detected BOM %s for %s', enc, description)
+            return enc
+
+    if not chardet:
+        logger.warning('chardet not available; cannot auto-detect encoding for %s', description)
+        return None
+
+    result = chardet.detect(raw)
+    encoding = result.get('encoding')
+    confidence = result.get('confidence', 0.0)
+    if encoding:
+        logger.debug('chardet detected encoding %s for %s (confidence %.3f)', encoding, description, confidence)
+        return encoding
+
+    logger.warning('chardet could not determine encoding for %s (confidence %.3f)', description, confidence)
+    return None
+
+
+def _detect_stream_encoding(stream, description, sample_bytes=_ENCODING_SAMPLE_BYTES):
+    """Detect the encoding of a seekable binary stream using BOMs and chardet."""
+    if not stream.seekable():
+        raise OSError(f"Input stream {description!r} is not seekable; cannot auto-detect encoding")
+    start_pos = stream.tell()
+    raw = stream.read(sample_bytes)
+    stream.seek(start_pos)
+    return _detect_bytes_encoding(raw, description)
+
+
+class _ChainedReader(io.RawIOBase):
+    """Raw reader that yields data from `first` then continues with `second`."""
+
+    def __init__(self, first, second):
+        self.first = first
+        self.second = second
+
+    def readable(self):
+        return True
+
+    def readinto(self, b):
+        mv = memoryview(b)
+        total = 0
+
+        if self.first is not None and len(mv):
+            chunk = self.first.read(len(mv))
+            if chunk:
+                mv[:len(chunk)] = chunk
+                total += len(chunk)
+            else:
+                self.first = None
+
+        if total and total == len(mv):
+            return total
+
+        if self.first is None and len(mv) - total and self.second is not None:
+            chunk = self.second.read(len(mv) - total)
+            if chunk:
+                mv[total:total + len(chunk)] = chunk
+                total += len(chunk)
+
+        return total
+
+
+def _normalize_input_encoding(value):
+    """Ensure --input-encoding is either 'auto' or a known codec name."""
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ValueError('input encoding must be a string')
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError('input encoding must be non-empty')
+    if normalized.lower() == 'auto':
+        return 'auto'
+    try:
+        return codecs.lookup(normalized).name
+    except LookupError as exc:
+        raise ValueError(f"Unknown encoding {value!r}; use --input-encoding=auto or a valid codec") from exc
+
+
+def _open_input_file(path, encoding):
+    """Open an input file honoring --input-encoding and AUTO detection."""
+    chosen = encoding or 'utf-8'
+    if isinstance(chosen, str) and chosen.lower() == 'auto':
+        binary = open(path, 'rb')
+        try:
+            detected = _detect_stream_encoding(binary, path)
+            if not detected:
+                raise ValueError(f"Could not auto-detect encoding for {path!r}; please supply --input-encoding")
+            chosen = detected
+            return io.TextIOWrapper(binary, encoding=chosen, errors='surrogateescape')
+        except Exception:
+            binary.close()
+            raise
+    return open(path, 'r', encoding=chosen, errors='surrogateescape')
+
+
+def _stdin_text_stream(encoding):
+    """Return a text stream for stdin respecting --input-encoding."""
+    if not encoding:
+        return sys.stdin
+
+    if not isinstance(encoding, str):
+        raise ValueError('input encoding must be a string when reading stdin')
+    requested = encoding
+    buffer = getattr(sys.stdin, 'buffer', None)
+
+    if requested.lower() == 'auto':
+        if buffer is None:
+            raise ValueError('stdin buffering not available; cannot auto-detect encoding')
+        sample = buffer.read(_ENCODING_SAMPLE_BYTES)
+        detected = _detect_bytes_encoding(sample, 'stdin')
+        if not detected:
+            raise ValueError('Could not auto-detect encoding for stdin; please supply --input-encoding')
+        chained = _ChainedReader(io.BytesIO(sample), buffer)
+        buffered = io.BufferedReader(chained)
+        return io.TextIOWrapper(buffered, encoding=detected, errors='surrogateescape', line_buffering=False)
+
+    if hasattr(sys.stdin, 'reconfigure'):
+        sys.stdin.reconfigure(encoding=requested, errors='surrogateescape')
+        return sys.stdin
+
+    if buffer is None:
+        raise ValueError('stdin buffering not available; cannot rewrap stream with requested encoding')
+    return io.TextIOWrapper(buffer, encoding=requested, errors='surrogateescape', line_buffering=False)
 
 if __name__ == '__main__':
     syslogger = sys.stderr.write
@@ -749,6 +896,9 @@ def main(argv=sys.argv):
                         help='read input file')
     parser.add_argument('--stdin',action='store_true',
                         help='read stdin (instead of input file)')
+    parser.add_argument('--input-encoding','--input-enc',
+                        default='utf-8',
+                        help="encoding used for --input files; use 'auto' for BOM/UTF detection")
     parser.add_argument('text', nargs='*',
                         help='the unicode text')
     #
@@ -783,6 +933,11 @@ def main(argv=sys.argv):
                                   "U+2002/U+2003/U+2009/U+202F -> space"))
     #
     args = parser.parse_args(argv[1:])
+    #
+    try:
+        args.input_encoding = _normalize_input_encoding(args.input_encoding)
+    except ValueError as exc:
+        parser.error(str(exc))
     #
     if 1 != bool(args.text) + bool(args.input) + bool(args.stdin):
         parser.print_help()
@@ -830,10 +985,15 @@ def main(argv=sys.argv):
         if args.text:
             logger.warning('Cmdline %r ignored', args.text)
         #
-        if args.stdin:
-            I = sys.stdin
-        else:
-            I =  open(args.input)
+        try:
+            if args.stdin:
+                I = _stdin_text_stream(args.input_encoding)
+            else:
+                I = _open_input_file(args.input, args.input_encoding)
+        except ValueError as exc:
+            logger.error('%s', exc)
+            sys.stderr.write(str(exc) + '\n')
+            return 2
         #
         for L in I:
                 decompose_to_tex.parse(L)
@@ -844,11 +1004,16 @@ def main(argv=sys.argv):
     #
     for  t in args.text:
         if not isinstance(t,str):
-            t = str(t, "utf-8")
+            # actually, it seems that this will never trigger
+            t = str(t, "utf-8", 'replace')
         decompose_to_tex.parse(t)
         out.write(decompose_to_tex.result)
     return (0)
 
 if __name__ == '__main__':
     os.environ["PYTHONIOENCODING"] = "utf-8"
-    sys.exit(main(sys.argv))
+    try:
+        sys.exit(main(sys.argv))
+    except Exception as E:
+        sys.stderr.write(f'Problem! Exception raised {E!r}')
+        sys.exit(13)

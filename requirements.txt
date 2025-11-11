@@ -1,0 +1,2 @@
+# for auto detection
+chardet
